@@ -1,7 +1,8 @@
 CC=/usr/bin/gcc
 FLAGS=-Wall -g
 TARGET=uvgTorrent
-PATHS=src/debug
+INCLUDE=-Isrc/debug
+
 default:
 	make clean
 	make build
@@ -11,7 +12,7 @@ clean:
 	rm -f bin/$(TARGET)
 
 build:
-	$(CC) -I$(PATHS) -std=c11 -Wall -g -o bin/$(TARGET) src/uvgTorrent.c -lm
+	$(CC) $(INCLUDE) -std=c11 -Wall -g -o bin/$(TARGET) src/uvgTorrent.c -lm
 
 test:
-	valgrind --leak-check=full ./bin/$(TARGET) 11
+	valgrind --leak-check=full ./bin/$(TARGET) torrents/test.torrent
