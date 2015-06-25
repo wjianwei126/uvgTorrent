@@ -21,7 +21,7 @@
 
 #define assert(A, M, ...) if(!(A)) { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
 
-#define sentinel(M, ...)  { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
+#define throw(M, ...)  { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
 
 #define check_mem(A) assert((A), "Out of memory.")
 

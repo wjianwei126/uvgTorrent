@@ -2,19 +2,15 @@
 #define _torrent_h
 
 typedef struct {
-    char *description;
-    int (*init)(void *self);
-    void (*describe)(void *self);
+    char *path;
+    int (*init)(void *self, char *path);
     void (*destroy)(void *self);
-    void *(*move)(void *self);
-    int (*attack)(void *self);
+    int (*parse)(void *self);
 } Torrent;
 
-int Torrent_init(void *self);
+int Torrent_init(void *self, char *path);
 void Torrent_destroy(void *self);
-void *Torrent_new(size_t size, Torrent proto, char *description);
-
-#define NEW(T, N) Torrent(sizeof(T), T##Proto, N)
-#define _(N) proto.N
+int Torrent_parse(void *self);
+void *Torrent_new(size_t size, char *path);
 
 #endif

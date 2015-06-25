@@ -12,7 +12,7 @@ clean:
 	rm -f bin/$(TARGET)
 
 build:
-	$(CC) $(INCLUDE) -std=c11 -Wall -g -o bin/$(TARGET) src/uvgTorrent.c -lm
+	$(CC) $(INCLUDE) -std=c11 -Wall -g -o bin/$(TARGET) src/uvgTorrent.c src/torrent.c -lm
 
 test:
 	valgrind --leak-check=full ./bin/$(TARGET) torrents/test.torrent
