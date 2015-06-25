@@ -1,7 +1,8 @@
 CC=/usr/bin/gcc
-FLAGS=-Wall -g
+FLAGS=-Wall -g -D_POSIX_SOURCE -std=c11
 TARGET=uvgTorrent
-INCLUDE=-Isrc/debug
+INCLUDE=-Isrc/debug -Isrc/macro -Isrc/torrent -Ilib/bencode-tools/include
+OBJECTS=
 
 default:
 	make clean
@@ -12,7 +13,7 @@ clean:
 	rm -f bin/$(TARGET)
 
 build:
-	$(CC) $(INCLUDE) -std=c11 -Wall -g -o bin/$(TARGET) src/uvgTorrent.c src/torrent.c -lm
+	$(CC) -Wl,-rpath=lib/bencode-tools/ $(INCLUDE) $(OBJECTS) $(FLAGS) -o bin/$(TARGET) src/uvgTorrent.c src/torrent/torrent.c -lm
 
 test:
-	valgrind --leak-check=full ./bin/$(TARGET) torrents/test.torrent
+	valgrind --leak-check=full --track-origins=yes ./bin/$(TARGET) torrents/test.torrent
