@@ -2,14 +2,7 @@
 * uvgTorrent main file
 * Author: Simon Bursten (unovongalixor :: github)
 */
-
-/* GLOBAL NEW MACRO 
-*  initializes a struct based on convention: 
-*  NEW(TYPE, ARGS) -> TYPE_new(sizeof(TYPE), ARGS);
-*/
-
-#define NEW(T, ...) T ##_new(sizeof(T), ##__VA_ARGS__)
-
+#include "macro.h"
 #include "debug.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,7 +19,8 @@ int main(int argc, char *argv[])
     check_mem(torrent);
 
     if(torrent->parse(torrent)){
-
+        /* print parsed torrent info */
+        torrent->print(torrent);
     }
 
     /* cleanup */
