@@ -1,0 +1,113 @@
+#include "debug.h"
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include "torrent.h"
+
+void Torrent_destroy(void * self)
+{
+    Torrent * this = self;
+    
+    if(this) {
+        if(this->path) { free(this->path); };
+       	free(this);
+    }
+}
+
+int Torrent_init(void *self, char *path)
+{
+    Torrent * this = self;
+    
+	this->path = NULL;
+
+	this->path = malloc(strlen(path) + 1);
+    check_mem(this->path);
+    strcpy(this->path, path);
+
+    return EXIT_SUCCESS;
+
+error:
+	return EXIT_FAILURE;
+}
+
+void *Torrent_new(size_t size, char *path)
+{
+    Torrent *torrent = malloc(size);
+    check_mem(torrent);
+
+    torrent->init = Torrent_init;
+    torrent->destroy = Torrent_destroy;
+    torrent->print= Torrent_print;
+
+    torrent->parse = Torrent_parse;
+
+    if(torrent->init(torrent, path) == EXIT_FAILURE) {
+        throw("torrent init failed");
+    } else {
+        // all done, we made an object of any type
+        return torrent;
+    }
+
+error:
+	if(torrent) { torrent->destroy(torrent); };
+    return NULL;
+}
+
+void Torrent_print(void *self){
+    Torrent * this = self;
+    if(this){
+
+    }
+}
+
+int Torrent_parse(void *self){
+    Torrent * this = self;
+
+    FILE *torrent_file = NULL;
+	char *torrent_content = NULL;
+    //struct bencode_dict *decoded_torrent = NULL;
+	//off_t torrent_size;
+    //struct stat stbuf;
+
+    /* alert user parsing is underway */
+    log_info("attempting to parse torrent file :: %s", this->path);
+
+    torrent_file = fopen(this->path, "rb");
+    if (!torrent_file){
+    	/* No such file or directory (POSIX.1) */
+    	errno = ENOENT;
+    	throw("%s", this->path);
+    }
+
+    fseek(torrent_file, 0, SEEK_END);
+    long torrent_size = ftell(torrent_file);
+    rewind(torrent_file);
+
+    torrent_content = malloc(torrent_size+1);
+    check_mem(torrent_content);
+    if (!fread(torrent_content, sizeof(char), torrent_size, torrent_file)) 
+    { 
+        throw("read torrent failed");
+    }
+    torrent_content[torrent_size] = '\0';
+
+    log_info("%s",torrent_content);
+    
+	/* cleanup */
+    fclose(torrent_file);
+	free(torrent_content);
+    
+	return EXIT_SUCCESS;
+
+error:
+	/* cleanup */
+	if(torrent_content) { free(torrent_content); };
+	if(torrent_file) { fclose(torrent_file); };
+    
+    log_err("failed to parse torrent file :: %s", this->path);
+
+	return EXIT_FAILURE;
+}
