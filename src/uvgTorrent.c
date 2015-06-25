@@ -3,6 +3,13 @@
 * Author: Simon Bursten (unovongalixor :: github)
 */
 
+/* GLOBAL NEW MACRO 
+*  initializes a struct based on convention: 
+*  NEW(TYPE, ARGS) -> TYPE_new(sizeof(TYPE), ARGS);
+*/
+
+#define NEW(T, ...) T ##_new(sizeof(T), ##__VA_ARGS__)
+
 #include "debug.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,29 +18,23 @@
 
 int main(int argc, char *argv[])
 {
-    /* initialize torrent_path as null
-       will help determine if pointer needs to be freed on error */
-    char * torrent_path = NULL;
-
+    Torrent *torrent = NULL;
     /* verify user has provided a torrent to parse */
     assert(argc == 2, "provide a torrent to download");
     
-    /* copy torrent path */
-    size_t torrent_path_len = strlen(argv[1]);
-    torrent_path = malloc(torrent_path_len+1);
-    /* verify memory was allocated */
-    check_mem(test); 
-    strcpy(torrent_path, argv[1]);
+    torrent = NEW(Torrent, argv[1]);
+    check_mem(torrent);
 
-    /* alert user parsing is underway */
-    log_info("attempting to parse torrent file :: %s", torrent_path);
+    if(torrent->parse(torrent)){
+
+    }
 
     /* cleanup */
-    free(torrent_path);
+    torrent->destroy(torrent);
     return 0;
 
 error:
     /* cleanup */
-    if(torrent_path) { free(torrent_path); };
+    if(torrent) { torrent->destroy(torrent); };
     return 1;
 }
