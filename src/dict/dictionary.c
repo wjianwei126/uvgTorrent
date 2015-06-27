@@ -81,6 +81,8 @@ int Dictionary_set(void *self, const char *key, const void *value, size_t value_
     }
 
     if (exists) {
+        if(this->buckets[i]->key) { free(this->buckets[i]->key); };
+        if(this->buckets[i]->value) { free(this->buckets[i]->value); };
         this->buckets[i]->init(this->buckets[i], key, value, value_size, hash);
     } else {
         this->buckets[this->bucket_count] = NEW(Bucket, key, value, value_size, hash);
@@ -164,7 +166,7 @@ void *Bucket_new(size_t size, const char *key, const void *value, size_t value_s
 
 int Bucket_init(void *self, const char *key, const void *value, size_t value_size, uint32_t hash){
     Bucket * this = self;
-    
+
     this->key = NULL;
     this->value = NULL;
     this->hash = 0;
@@ -173,8 +175,8 @@ int Bucket_init(void *self, const char *key, const void *value, size_t value_siz
     check_mem(this->key);
     strcpy(this->key, key);
 
-    this->value = malloc(value_size + 1);
-    check_mem(this->key);
+    this->value = calloc(1, value_size + 1);
+    check_mem(this->value);
     memcpy(this->value, value, value_size);
 
     this->hash = hash;
@@ -194,7 +196,7 @@ void Bucket_destroy(void *self){
     
     if(this) {
         if(this->key) { free(this->key); };
-        if(this->key) { free(this->value); };
+        if(this->value) { free(this->value); };
         free(this);
     }
 };

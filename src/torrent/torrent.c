@@ -101,9 +101,13 @@ int Torrent_parse(void *self){
     
     Dictionary * magnet_data = NEW(Dictionary);
     char * test_val = "123\0";
+    char * test_val2 = "1234\0";
     magnet_data->set(magnet_data, "test", test_val, sizeof(char) * strlen(test_val));
+    magnet_data->set(magnet_data, "test", test_val2, sizeof(char) * strlen(test_val2));
     char * val = magnet_data->get(magnet_data, "test");
     log_info("%s", val);
+    char * val2 = magnet_data->get(magnet_data, "test");
+    log_info("%s", val2);
     magnet_data->destroy(magnet_data);
 	/* cleanup */
     fclose(torrent_file);
