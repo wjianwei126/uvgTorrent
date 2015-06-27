@@ -1,11 +1,12 @@
-#include "debug.h"
+#include "debug/debug.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "torrent.h"
+#include "dict/dictionary.h"
+#include "torrent/torrent.h"
 
 void Torrent_destroy(void * self)
 {
@@ -13,6 +14,7 @@ void Torrent_destroy(void * self)
     
     if(this) {
         if(this->path) { free(this->path); };
+
        	free(this);
     }
 }
@@ -28,9 +30,8 @@ int Torrent_init(void *self, char *path)
     strcpy(this->path, path);
 
     return EXIT_SUCCESS;
-
-error:
-	return EXIT_FAILURE;
+    error:
+	   return EXIT_FAILURE;
 }
 
 void *Torrent_new(size_t size, char *path)
@@ -51,9 +52,9 @@ void *Torrent_new(size_t size, char *path)
         return torrent;
     }
 
-error:
-	if(torrent) { torrent->destroy(torrent); };
-    return NULL;
+    error:
+    	if(torrent) { torrent->destroy(torrent); };
+        return NULL;
 }
 
 void Torrent_print(void *self){
@@ -82,12 +83,14 @@ int Torrent_parse(void *self){
     	throw("%s", this->path);
     }
 
+    /* get file size */
     fseek(torrent_file, 0, SEEK_END);
     long torrent_size = ftell(torrent_file);
     rewind(torrent_file);
 
     torrent_content = malloc(torrent_size+1);
     check_mem(torrent_content);
+
     if (!fread(torrent_content, sizeof(char), torrent_size, torrent_file)) 
     { 
         throw("read torrent failed");
@@ -96,6 +99,12 @@ int Torrent_parse(void *self){
 
     log_info("%s",torrent_content);
     
+    Dictionary * magnet_data = NEW(Dictionary);
+    char * test_val = "123\0";
+    magnet_data->set(magnet_data, "test", test_val, sizeof(char) * strlen(test_val));
+    char * val = magnet_data->get(magnet_data, "test");
+    log_info("%s", val);
+    magnet_data->destroy(magnet_data);
 	/* cleanup */
     fclose(torrent_file);
 	free(torrent_content);

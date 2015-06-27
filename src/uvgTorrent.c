@@ -2,12 +2,12 @@
 * uvgTorrent main file
 * Author: Simon Bursten (unovongalixor :: github)
 */
-#include "macro.h"
-#include "debug.h"
+#include "macro/macro.h"
+#include "debug/debug.h"
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "torrent.h"
+#include "torrent/torrent.h"
 
 int main(int argc, char *argv[])
 {
