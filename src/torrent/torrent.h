@@ -1,13 +1,14 @@
-#include "macro.h"
+#include "macro/macro.h"
 
 #ifndef _torrent_h
 #define _torrent_h
 
 typedef struct {
-    char * path;
     int (*init)(void *self, char *path);
     void (*print)(void *self);
     void (*destroy)(void *self);
+    
+    char * path;
     int (*parse)(void *self);
 } Torrent;
 
