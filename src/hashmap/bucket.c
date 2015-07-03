@@ -70,6 +70,6 @@ int Bucket_set(Bucket *this, const char *key, void *value, size_t value_sizem){
     return 1;
 };
 
-const void * Bucket_get(Bucket *this, const char *key){
+const void * Bucket_get(Bucket *this){
     return this->value;
 };
