@@ -12,7 +12,7 @@ struct Bucket
     void (*print)(Bucket *this);
     void (*destroy)(Bucket *this);
 
-	void * (*get)(Bucket *this, const char *key);
+	const void * (*get)(Bucket *this, const char *key);
 	int (*set)(Bucket *this, const char *key, void *value, size_t value_size);
 
 	char * key;
@@ -28,5 +28,5 @@ void Bucket_destroy(Bucket *this);
 
 /* get / set */
 int Bucket_set(Bucket *this, const char *key, void *value, size_t value_size);
-void * Bucket_get(Bucket *this, const char *key);
+const void * Bucket_get(Bucket *this, const char *key);
 #endif

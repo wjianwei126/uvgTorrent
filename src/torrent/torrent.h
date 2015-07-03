@@ -1,4 +1,5 @@
 #include "macro/macro.h"
+#include "hashmap/hashmap.h"
 
 #ifndef _torrent_h
 #define _torrent_h
@@ -10,8 +11,10 @@ struct Torrent {
     void (*print)(Torrent *this);
     void (*destroy)(Torrent *this);
     
-    char * path;
     int (*parse)(Torrent *this);
+
+    char * path;
+    Hashmap * magnet_data;
 };
 
 /* constructor / destructor functions */
