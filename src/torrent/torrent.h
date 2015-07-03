@@ -4,21 +4,22 @@
 #define _torrent_h
 
 // type
-typedef struct {
-    int (*init)(void *self, char *path);
-    void (*print)(void *self);
-    void (*destroy)(void *self);
+typedef struct Torrent Torrent;
+struct Torrent {
+    int (*init)(Torrent *this, char *path);
+    void (*print)(Torrent *this);
+    void (*destroy)(Torrent *this);
     
     char * path;
-    int (*parse)(void *self);
-} Torrent;
+    int (*parse)(Torrent *this);
+};
 
 /* constructor / destructor functions */
-void *Torrent_new(size_t size, char *path);
-int Torrent_init(void *self, char *path);
-void Torrent_print(void *self);
-void Torrent_destroy(void *self);
+Torrent *Torrent_new(size_t size, char *path);
+int Torrent_init(Torrent *this, char *path);
+void Torrent_print(Torrent *this);
+void Torrent_destroy(Torrent *this);
 
-int Torrent_parse(void *self);
+int Torrent_parse(Torrent *this);
 
 #endif
