@@ -107,7 +107,7 @@ const void * Hashmap_get(Hashmap *this, const char *key) {
     }
 
     if(exists){
-        return this->buckets[i]->value;
+        return this->buckets[i]->get(this->buckets[i]);
     } else {
         return NULL;
     }
