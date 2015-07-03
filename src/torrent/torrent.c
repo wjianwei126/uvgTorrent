@@ -12,6 +12,7 @@ void Torrent_destroy(Torrent * this)
 {   
     if(this) {
         if(this->path) { free(this->path); };
+        if(this->path) { this->magnet_data->destroy(this->magnet_data); };
        	free(this);
     }
 }
@@ -91,16 +92,17 @@ int Torrent_parse(Torrent *this){
 
     log_info("%s",torrent_content);
     
-    Hashmap * magnet_data = NEW(Hashmap);
+    this->magnet_data = NEW(Hashmap);
+    check_mem(this->magnet_data);
+
     char * test_val = "123\0";
     char * test_val2 = "1234\0";
-    magnet_data->set(magnet_data, "test", test_val, sizeof(char) * strlen(test_val));
-    magnet_data->set(magnet_data, "test", test_val2, sizeof(char) * strlen(test_val2));
-    char * val = magnet_data->get(magnet_data, "test");
+    this->magnet_data->set(this->magnet_data, "test", test_val, sizeof(char) * strlen(test_val));
+    this->magnet_data->set(this->magnet_data, "test", test_val2, sizeof(char) * strlen(test_val2));
+    const char * val = this->magnet_data->get(this->magnet_data, "test");
     log_info("%s", val);
-    char * val2 = magnet_data->get(magnet_data, "test");
+    const char * val2 = this->magnet_data->get(this->magnet_data, "test");
     log_info("%s", val2);
-    magnet_data->destroy(magnet_data);
 	/* cleanup */
     fclose(torrent_file);
 	free(torrent_content);

@@ -91,7 +91,7 @@ error:
     return EXIT_FAILURE;
 }
 
-void * Hashmap_get(Hashmap *this, const char *key) {
+const void * Hashmap_get(Hashmap *this, const char *key) {
     assert(key, "Hashmap :: provide key");
 
     uint32_t hash = this->get_hash(key, strlen(key));
