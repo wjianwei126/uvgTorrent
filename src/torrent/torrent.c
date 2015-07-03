@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "dict/dictionary.h"
+#include "hashmap/hashmap.h"
 #include "torrent/torrent.h"
 
 void Torrent_destroy(void * self)
@@ -99,7 +99,7 @@ int Torrent_parse(void *self){
 
     log_info("%s",torrent_content);
     
-    Dictionary * magnet_data = NEW(Dictionary);
+    Hashmap * magnet_data = NEW(Hashmap);
     char * test_val = "123\0";
     char * test_val2 = "1234\0";
     magnet_data->set(magnet_data, "test", test_val, sizeof(char) * strlen(test_val));

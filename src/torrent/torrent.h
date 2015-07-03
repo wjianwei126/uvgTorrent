@@ -3,6 +3,7 @@
 #ifndef _torrent_h
 #define _torrent_h
 
+// type
 typedef struct {
     int (*init)(void *self, char *path);
     void (*print)(void *self);
@@ -18,7 +19,6 @@ int Torrent_init(void *self, char *path);
 void Torrent_print(void *self);
 void Torrent_destroy(void *self);
 
-/* */
 int Torrent_parse(void *self);
 
 #endif
