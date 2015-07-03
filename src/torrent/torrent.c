@@ -8,21 +8,16 @@
 #include "hashmap/hashmap.h"
 #include "torrent/torrent.h"
 
-void Torrent_destroy(void * self)
-{
-    Torrent * this = self;
-    
+void Torrent_destroy(Torrent * this)
+{   
     if(this) {
         if(this->path) { free(this->path); };
-
        	free(this);
     }
 }
 
-int Torrent_init(void *self, char *path)
-{
-    Torrent * this = self;
-    
+int Torrent_init(Torrent *this, char *path)
+{   
 	this->path = NULL;
 
 	this->path = malloc(strlen(path) + 1);
@@ -30,11 +25,11 @@ int Torrent_init(void *self, char *path)
     strcpy(this->path, path);
 
     return EXIT_SUCCESS;
-    error:
-	   return EXIT_FAILURE;
+error:
+	return EXIT_FAILURE;
 }
 
-void *Torrent_new(size_t size, char *path)
+Torrent *Torrent_new(size_t size, char *path)
 {
     Torrent *torrent = malloc(size);
     check_mem(torrent);
@@ -52,21 +47,18 @@ void *Torrent_new(size_t size, char *path)
         return torrent;
     }
 
-    error:
-    	if(torrent) { torrent->destroy(torrent); };
-        return NULL;
+error:
+	if(torrent) { torrent->destroy(torrent); };
+    return NULL;
 }
 
-void Torrent_print(void *self){
-    Torrent * this = self;
+void Torrent_print(Torrent *this){
     if(this){
 
     }
 }
 
-int Torrent_parse(void *self){
-    Torrent * this = self;
-
+int Torrent_parse(Torrent *this){
     FILE *torrent_file = NULL;
 	char *torrent_content = NULL;
     //struct bencode_dict *decoded_torrent = NULL;
