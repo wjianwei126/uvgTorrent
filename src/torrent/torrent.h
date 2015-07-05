@@ -24,5 +24,4 @@ void Torrent_print(Torrent *this);
 void Torrent_destroy(Torrent *this);
 
 int Torrent_parse(Torrent *this);
-
 #endif
