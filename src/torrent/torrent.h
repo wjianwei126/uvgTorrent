@@ -1,8 +1,8 @@
-#include "macro/macro.h"
-#include "hashmap/hashmap.h"
-
 #ifndef _torrent_h
 #define _torrent_h
+
+#include "macro/macro.h"
+#include "hashmap/hashmap.h"
 
 typedef struct Torrent Torrent;
 struct Torrent {

@@ -56,7 +56,9 @@ void Hashmap_destroy(Hashmap * this)
 */
 void Hashmap_print(Hashmap *this){
     if(this){
-
+        for(int i = 0; i < this->bucket_count; i++){
+            this->buckets[i]->print(this->buckets[i]);
+        }
     }
 }
 
