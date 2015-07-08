@@ -28,9 +28,9 @@ Hashmap *Hashmap_new(size_t size)
         return map;
     }
 
-    error:
-        if(map) { map->destroy(map); };
-        return NULL;
+error:
+    if(map) { map->destroy(map); };
+    return NULL;
 }
 
 int Hashmap_init(Hashmap *this)

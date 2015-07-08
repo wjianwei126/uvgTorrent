@@ -51,6 +51,7 @@ int Torrent_init(Torrent *this, char *path)
     strcpy(this->path, path);
 
     return EXIT_SUCCESS;
+    
 error:
 	return EXIT_FAILURE;
 }

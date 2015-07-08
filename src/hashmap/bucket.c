@@ -25,9 +25,9 @@ Bucket *Bucket_new(size_t size, const char *key, const void *value, size_t value
         return bucket;
     }
 
-    error:
-        if(bucket) { bucket->destroy(bucket); };
-        return NULL;
+error:
+    if(bucket) { bucket->destroy(bucket); };
+    return NULL;
 };
 
 /**
