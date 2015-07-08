@@ -18,6 +18,7 @@ struct Bucket
 	char * key;
 	uint32_t hash;
 	void * value;
+	Bucket * next;
 };
 
 /* basic functions */

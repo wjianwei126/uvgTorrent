@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include "utils/string_utils.h"
 #include "hashmap/hashmap.h"
 #include "torrent/torrent.h"
 
@@ -45,13 +46,14 @@ error:
 int Torrent_init(Torrent *this, char *path)
 {   
 	this->path = NULL;
+    this->magnet_data = NULL;
 
 	this->path = malloc(strlen(path) + 1);
     check_mem(this->path);
     strcpy(this->path, path);
 
     return EXIT_SUCCESS;
-    
+
 error:
 	return EXIT_FAILURE;
 }
@@ -112,26 +114,11 @@ int Torrent_parse(Torrent *this){
     }
     torrent_content[torrent_size] = '\0';
 
-    log_info("%s",torrent_content);
-    
-    this->magnet_data = NEW(Hashmap);
-    check_mem(this->magnet_data);
-    
-    /*
-    char *test_val = "1234";
-    char *test_val2 = "1234567";
-    if(this->magnet_data->set(this->magnet_data, "test", test_val, sizeof(char) * strlen(test_val)) == EXIT_FAILURE){
-        throw("magnet_data set failed");
-    }
-    if(this->magnet_data->set(this->magnet_data, "test2", test_val2, sizeof(char) * strlen(test_val2)) == EXIT_FAILURE){
-        throw("magnet_data set failed");
-    }
-    const char * val = this->magnet_data->get(this->magnet_data, "test");
-    log_info("%s", val);
-    const char * val2 = this->magnet_data->get(this->magnet_data, "test2");
-    log_info("%s", val2);
-    */
+    char * sub_string = torrent_content + 8;
+    log_info("%s", sub_string);
 
+    this->magnet_data = string_utils.magnet_parse(sub_string);
+    this->magnet_data->print(this->magnet_data);
 	/* cleanup */
     fclose(torrent_file);
 	free(torrent_content);
