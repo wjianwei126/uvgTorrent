@@ -25,10 +25,10 @@ int main(int argc, char *argv[])
 
     /* cleanup */
     torrent->destroy(torrent);
-    return 0;
+    return EXIT_SUCCESS;
 
 error:
     /* cleanup */
     if(torrent) { torrent->destroy(torrent); };
-    return 1;
+    return EXIT_FAILURE;
 }

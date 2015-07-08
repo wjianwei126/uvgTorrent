@@ -8,28 +8,6 @@
 #include "hashmap/hashmap.h"
 #include "torrent/torrent.h"
 
-void Torrent_destroy(Torrent * this)
-{   
-    if(this) {
-        if(this->path) { free(this->path); };
-        if(this->path) { this->magnet_data->destroy(this->magnet_data); };
-       	free(this);
-    }
-}
-
-int Torrent_init(Torrent *this, char *path)
-{   
-	this->path = NULL;
-
-	this->path = malloc(strlen(path) + 1);
-    check_mem(this->path);
-    strcpy(this->path, path);
-
-    return EXIT_SUCCESS;
-error:
-	return EXIT_FAILURE;
-}
-
 Torrent *Torrent_new(size_t size, char *path)
 {
     Torrent *torrent = malloc(size);
@@ -49,24 +27,67 @@ Torrent *Torrent_new(size_t size, char *path)
     }
 
 error:
-	if(torrent) { torrent->destroy(torrent); };
+    if(torrent) { torrent->destroy(torrent); };
     return NULL;
 }
 
+/**
+* int Torrent_init(Torrent *this, char *path)
+*
+* Torrent    *this; instance to initialize
+* char       path; path to file containing magnet link 
+* 
+* PURPOSE : copy torrent path into Torrent struct
+* RETURN  : success bool
+* NOTES   : magnet link will be taken from stdin
+*           once app is working
+*/
+int Torrent_init(Torrent *this, char *path)
+{   
+	this->path = NULL;
+
+	this->path = malloc(strlen(path) + 1);
+    check_mem(this->path);
+    strcpy(this->path, path);
+
+    return EXIT_SUCCESS;
+error:
+	return EXIT_FAILURE;
+}
+
+void Torrent_destroy(Torrent * this)
+{   
+    if(this) {
+        if(this->path) { free(this->path);  };
+        if(this->magnet_data) { this->magnet_data->destroy(this->magnet_data); };
+        free(this);
+    }
+}
+
+/**
+* void Torrent_print(Torrent *this){
+*
+* PURPOSE : print a torrent struct
+*/
 void Torrent_print(Torrent *this){
     if(this){
 
     }
 }
 
+/*
+* int Torrent_parse(Torrent *this)
+* 
+* PURPOSE : parse a torrent objects magnet url from a file
+* RETURN  : success bool
+* NOTES   : if file was successfully parsed the torrents 
+*           magnet_data hashmap will be ready for use
+*
+*/
 int Torrent_parse(Torrent *this){
     FILE *torrent_file = NULL;
 	char *torrent_content = NULL;
-    //struct bencode_dict *decoded_torrent = NULL;
-	//off_t torrent_size;
-    //struct stat stbuf;
 
-    /* alert user parsing is underway */
     log_info("attempting to parse torrent file :: %s", this->path);
 
     torrent_file = fopen(this->path, "rb");
@@ -94,15 +115,22 @@ int Torrent_parse(Torrent *this){
     
     this->magnet_data = NEW(Hashmap);
     check_mem(this->magnet_data);
-
-    char * test_val = "123\0";
-    char * test_val2 = "1234\0";
-    this->magnet_data->set(this->magnet_data, "test", test_val, sizeof(char) * strlen(test_val));
-    this->magnet_data->set(this->magnet_data, "test", test_val2, sizeof(char) * strlen(test_val2));
+    
+    /*
+    char *test_val = "1234";
+    char *test_val2 = "1234567";
+    if(this->magnet_data->set(this->magnet_data, "test", test_val, sizeof(char) * strlen(test_val)) == EXIT_FAILURE){
+        throw("magnet_data set failed");
+    }
+    if(this->magnet_data->set(this->magnet_data, "test2", test_val2, sizeof(char) * strlen(test_val2)) == EXIT_FAILURE){
+        throw("magnet_data set failed");
+    }
     const char * val = this->magnet_data->get(this->magnet_data, "test");
     log_info("%s", val);
-    const char * val2 = this->magnet_data->get(this->magnet_data, "test");
+    const char * val2 = this->magnet_data->get(this->magnet_data, "test2");
     log_info("%s", val2);
+    */
+
 	/* cleanup */
     fclose(torrent_file);
 	free(torrent_content);
@@ -112,7 +140,7 @@ int Torrent_parse(Torrent *this){
 error:
 	/* cleanup */
 	if(torrent_content) { free(torrent_content); };
-	if(torrent_file) { fclose(torrent_file); };
+    if(torrent_file) { fclose(torrent_file); };
     
     log_err("failed to parse torrent file :: %s", this->path);
 

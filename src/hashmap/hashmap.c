@@ -7,22 +7,6 @@
 #include <sys/types.h>
 #include "hashmap/hashmap.h"
 
-void Hashmap_destroy(Hashmap * this)
-{
-    
-    if(this) {
-        for(int i = 0; i < this->bucket_count; i++){
-            this->buckets[i]->destroy(this->buckets[i]);
-        }
-       	free(this);
-    }
-}
-
-int Hashmap_init(Hashmap *this)
-{
-    return EXIT_SUCCESS;
-}
-
 Hashmap *Hashmap_new(size_t size)
 {
     Hashmap *map = malloc(size);
@@ -39,24 +23,56 @@ Hashmap *Hashmap_new(size_t size)
     map->bucket_count = 0;
 
     if(map->init(map) == EXIT_FAILURE) {
-        throw("dictionary init failed");
+        throw("hashmap init failed");
     } else {
-        // all done, we made an object of any type
         return map;
     }
 
     error:
-    	if(map) { map->destroy(map); };
+        if(map) { map->destroy(map); };
         return NULL;
 }
 
+int Hashmap_init(Hashmap *this)
+{
+    return EXIT_SUCCESS;
+}
+
+void Hashmap_destroy(Hashmap * this)
+{
+    
+    if(this) {
+        for(int i = 0; i < this->bucket_count; i++){
+            this->buckets[i]->destroy(this->buckets[i]);
+        }
+       	free(this);
+    }
+}
+
+/**
+* void Hashmap_print(Hashmap *this){
+*
+* PURPOSE : print a hashmap struct
+*/
 void Hashmap_print(Hashmap *this){
     if(this){
 
     }
 }
 
-/* get / set */
+/**
+* int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_size) 
+*
+* Hashmap           *this; instance to initialize
+* const char        *key;
+* const void        *value; void pointer to store
+* size_t            value_size; 
+* 
+* PURPOSE :  stores a value in a bucket if it exists, or adds a bucket if it's needed
+* RETURN  :  success int
+* NOTES   :  lazy for loop being used for now. should be poptimized with a better data
+*            structure so lookup time isn't related to the number of keys
+*/
 int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_size) {
     assert(key, "Hashmap :: provide key");
     assert(value, "Hashmap :: provide value");
@@ -68,7 +84,10 @@ int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_
     int exists = 0;
     int i;
 
-    /* OPTIMIZE : Binary Search */
+    /* 
+        needs to be optimized. considering a trie so lookup time
+        is stable at hash length and independent of number of keys
+    */
     for(i = 0; i < this->bucket_count; i++){
         if(this->buckets[i]->hash == hash){
             exists = 1;
@@ -77,9 +96,7 @@ int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_
     }
 
     if (exists) {
-        if(this->buckets[i]->key) { free(this->buckets[i]->key); };
-        if(this->buckets[i]->value) { free(this->buckets[i]->value); };
-        this->buckets[i]->init(this->buckets[i], key, value, value_size, hash);
+        this->buckets[i]->set(this->buckets[i], key, value, value_size);
     } else {
         this->buckets[this->bucket_count] = NEW(Bucket, key, value, value_size, hash);
         this->bucket_count++;
@@ -91,6 +108,17 @@ error:
     return EXIT_FAILURE;
 }
 
+/**
+* const void * Hashmap_get(Hashmap *this, const char *key) 
+*
+* Hashmap           *this;
+* const char        *key;
+* 
+* PURPOSE :  retreive a consty value from the hashmap
+* RETURN  :  const void *; value stored for the key
+* NOTES   :  lazy for loop being used for now. should be poptimized with a better data
+*            structure so lookup time isn't related to the number of keys
+*/
 const void * Hashmap_get(Hashmap *this, const char *key) {
     assert(key, "Hashmap :: provide key");
 
@@ -99,6 +127,11 @@ const void * Hashmap_get(Hashmap *this, const char *key) {
 
     int exists = 0;
     int i = 0;
+
+    /* 
+        needs to be optimized. considering a trie so lookup time
+        is stable at hash length and independent of number of keys
+    */
     for(i = 0; i < this->bucket_count; i++){
         if(this->buckets[i]->hash == hash){
             exists = 1;
@@ -116,6 +149,17 @@ error:
     return NULL;
 }
 
+/**
+* uint32_t Hashmap_get_hash(const char *key, size_t len)
+*
+* Hashmap           *this;
+* const char        *key;
+* size_t            *len; key length
+* 
+* PURPOSE :  return a simple jenkins hash for a given string 
+*            (https://en.wikipedia.org/wiki/Jenkins_hash_function)
+* RETURN  :  uint32_t; the hash
+*/
 uint32_t Hashmap_get_hash(const char *key, size_t len) {
     uint32_t hash, i;
     for(hash = i = 0; i < len; ++i)

@@ -13,20 +13,19 @@ struct Bucket
     void (*destroy)(Bucket *this);
 
 	const void * (*get)(Bucket *this);
-	int (*set)(Bucket *this, const char *key, void *value, size_t value_size);
+	int (*set)(Bucket *this, const char *key, const void *value, size_t value_size);
 
 	char * key;
 	uint32_t hash;
 	void * value;
 };
 
-/* constructor / destructor functions */
+/* basic functions */
 Bucket *Bucket_new(size_t size, const char *key, const void *value, size_t value_size, uint32_t hash);
 int Bucket_init(Bucket *this, const char *key, const void *value, size_t value_size, uint32_t hash);
 void Bucket_print(Bucket *this);
 void Bucket_destroy(Bucket *this);
 
-/* get / set */
-int Bucket_set(Bucket *this, const char *key, void *value, size_t value_size);
+int Bucket_set(Bucket *this, const char *key, const void *value, size_t value_size);
 const void * Bucket_get(Bucket *this);
 #endif
