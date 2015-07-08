@@ -119,6 +119,7 @@ int Torrent_parse(Torrent *this){
 
     this->magnet_data = string_utils.magnet_parse(sub_string);
     this->magnet_data->print(this->magnet_data);
+
 	/* cleanup */
     fclose(torrent_file);
 	free(torrent_content);
@@ -129,6 +130,7 @@ error:
 	/* cleanup */
 	if(torrent_content) { free(torrent_content); };
     if(torrent_file) { fclose(torrent_file); };
+    if(this->magnet_data) { this->magnet_data->destroy(this->magnet_data); };
     
     log_err("failed to parse torrent file :: %s", this->path);
 
