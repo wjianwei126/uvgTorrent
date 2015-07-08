@@ -4,7 +4,6 @@
 #ifndef _torrent_h
 #define _torrent_h
 
-// type
 typedef struct Torrent Torrent;
 struct Torrent {
     int (*init)(Torrent *this, char *path);
@@ -17,11 +16,12 @@ struct Torrent {
     Hashmap * magnet_data;
 };
 
-/* constructor / destructor functions */
+/* basic functions */
 Torrent *Torrent_new(size_t size, char *path);
 int Torrent_init(Torrent *this, char *path);
-void Torrent_print(Torrent *this);
 void Torrent_destroy(Torrent *this);
+void Torrent_print(Torrent *this);
 
 int Torrent_parse(Torrent *this);
+
 #endif

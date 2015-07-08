@@ -21,11 +21,11 @@ struct Hashmap {
     int (*set)(Hashmap *this, const char *key, const void *value, size_t value_size);
 };
 
-/* constructor / destructor functions */
+/* basic functions */
 Hashmap * Hashmap_new(size_t size);
 int Hashmap_init(Hashmap *this);
-void Hashmap_print(Hashmap *this);
 void Hashmap_destroy(Hashmap *this);
+void Hashmap_print(Hashmap *this);
 
 const void * Hashmap_get(Hashmap *this, const char *key);
 int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_size);
