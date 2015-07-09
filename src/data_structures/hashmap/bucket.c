@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "hashmap/bucket.h"
+#include "data_structures/hashmap/bucket.h"
 
 Bucket *Bucket_new(size_t size, const char *key, const void *value, size_t value_size, uint32_t hash){
     Bucket *bucket = malloc(size);

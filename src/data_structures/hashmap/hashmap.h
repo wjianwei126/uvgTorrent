@@ -1,5 +1,5 @@
 #include "macro/macro.h"
-#include "hashmap/bucket.h"
+#include "data_structures/hashmap/bucket.h"
 #include <stdint.h>
 
 #ifndef _hashtable_h

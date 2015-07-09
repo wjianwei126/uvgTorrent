@@ -5,7 +5,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include "hashmap/hashmap.h"
+#include "data_structures/hashmap/hashmap.h"
 
 
 extern Hashmap * magnet_parse (const char * input);

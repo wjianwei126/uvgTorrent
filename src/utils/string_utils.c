@@ -2,7 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include "hashmap/hashmap.h"
+#include "data_structures/hashmap/hashmap.h"
 
 /*
 * extern Hashmap * magnet_parse(const char * input)
@@ -24,6 +24,10 @@ extern Hashmap * magnet_parse(const char * input){
 
     int str_pos = 0;
     int key = 1;
+
+    char trackers[10][256];
+    int tracker = 0;
+    memset(trackers, 0, 10*256);
 
     /* remove any solo key value pairs */
     /* this code skips over trackers as there may be many sharing the same key */
@@ -49,6 +53,11 @@ extern Hashmap * magnet_parse(const char * input){
 	                	if(hashmap->set(hashmap, key_buffer, value_buffer, strlen(value_buffer)) == EXIT_FAILURE){
 	                		throw("parsing failed");
 	                	}
+	                } else {
+	                	if(tracker < 10){
+	                		if(strlen(value_buffer) < 256) { memcpy(trackers[tracker], value_buffer, strlen(value_buffer)); }
+	                		tracker++;
+	                	}
 	                }
 	                memset(key_buffer, 0, 256);
 	                memset(value_buffer, 0, 256);
@@ -57,8 +66,8 @@ extern Hashmap * magnet_parse(const char * input){
 	    }
     }
 
-    // extract tracker array here and set to hashmap
-
+    hashmap->set(hashmap, "tr", trackers, 256*10);
+    
     return hashmap;
 error:
 	if(hashmap != NULL) { hashmap->destroy(hashmap); }
