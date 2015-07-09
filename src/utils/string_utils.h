@@ -8,13 +8,11 @@
 #include "data_structures/hashmap/hashmap.h"
 
 
-extern Hashmap * magnet_parse (const char * input);
-
-static const struct
+/*static const struct
 {
     Hashmap * (*magnet_parse) (const char * input);
 } string_utils = {
     magnet_parse
-};
+};*/
 
 #endif

@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include "utils/string_utils.h"
 #include "data_structures/hashmap/hashmap.h"
+#include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/torrent.h"
 
 Torrent *Torrent_new(size_t size, char *path)
@@ -46,7 +47,9 @@ error:
 int Torrent_init(Torrent *this, char *path)
 {   
 	this->path = NULL;
-    this->magnet_data = NULL;
+    this->name = NULL;
+    this->hash = NULL;
+    this->trackers = NULL;
 
 	this->path = malloc(strlen(path) + 1);
     check_mem(this->path);
@@ -62,7 +65,9 @@ void Torrent_destroy(Torrent * this)
 {   
     if(this) {
         if(this->path) { free(this->path);  };
-        if(this->magnet_data) { this->magnet_data->destroy(this->magnet_data); };
+        if(this->name) { free(this->name);  };
+        if(this->hash) { free(this->hash);  };
+        if(this->trackers) { this->trackers->destroy(this->trackers); };
         free(this);
     }
 }
@@ -117,10 +122,68 @@ int Torrent_parse(Torrent *this){
     char * sub_string = torrent_content + 8;
     log_info("%s", sub_string);
 
-    this->magnet_data = string_utils.magnet_parse(sub_string);
-    this->magnet_data->print(this->magnet_data);
+    Hashmap *hashmap = NULL;
+    hashmap = NEW(Hashmap);
+    check_mem(hashmap);
+    this->trackers = NEW(Linkedlist);
+    check_mem(this->trackers);
+
+    char key_buffer[256];
+    char value_buffer[256];
+    memset(key_buffer, 0, 256);
+    memset(value_buffer, 0, 256);
+
+    int str_pos = 0;
+    int key = 1;
+
+    /* remove any solo key value pairs */
+    /* this code skips over trackers as there may be many sharing the same key */
+    for (int i = 0; sub_string[i] != '\0'; i++){
+        switch(key){
+            case 1:
+                if(sub_string[i] != '='){
+                    key_buffer[str_pos] = sub_string[i];
+                    str_pos++;
+                } else {
+                    key = 0;
+                    str_pos = 0;
+                }
+                break;
+            case 0:
+                if(sub_string[i] != '&'){
+                    value_buffer[str_pos] = sub_string[i];
+                    str_pos++;
+                } else {
+                    key = 1;
+                    str_pos = 0;
+                    if(strcmp(key_buffer, "tr") != 0){
+                        if(hashmap->set(hashmap, key_buffer, value_buffer, strlen(value_buffer)) == EXIT_FAILURE){
+                            throw("parsing failed");
+                        }
+                    } else {
+                        this->trackers->append(this->trackers, value_buffer, strlen(value_buffer));
+                    }
+                    memset(key_buffer, 0, 256);
+                    memset(value_buffer, 0, 256);
+                }
+                break;
+        }
+    }
+
+    this->name = NULL;
+    const char * dn = hashmap->get(hashmap, "dn");
+    this->name = malloc(strlen(dn) + 1);
+    check_mem(this->name);
+    strcpy(this->name, dn);
+
+    this->hash = NULL;
+    const char * xt = hashmap->get(hashmap, "xt");
+    this->hash = malloc(strlen(xt) + 1);
+    check_mem(this->hash);
+    strcpy(this->hash, xt);
 
 	/* cleanup */
+    hashmap->destroy(hashmap);
     fclose(torrent_file);
 	free(torrent_content);
     
@@ -130,7 +193,9 @@ error:
 	/* cleanup */
 	if(torrent_content) { free(torrent_content); };
     if(torrent_file) { fclose(torrent_file); };
-    if(this->magnet_data) { this->magnet_data->destroy(this->magnet_data); };
+    if(this->name) { free(this->name); };
+    if(this->hash) { free(this->hash); };
+    if(hashmap) { hashmap->destroy(hashmap); };
     
     log_err("failed to parse torrent file :: %s", this->path);
 

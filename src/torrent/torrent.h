@@ -2,7 +2,7 @@
 #define _torrent_h
 
 #include "macro/macro.h"
-#include "data_structures/hashmap/hashmap.h"
+#include "data_structures/linkedlist/linkedlist.h"
 
 typedef struct Torrent Torrent;
 struct Torrent {
@@ -13,7 +13,9 @@ struct Torrent {
     int (*parse)(Torrent *this);
 
     char * path;
-    Hashmap * magnet_data;
+    char * name;
+    char * hash;
+    Linkedlist * trackers;
 };
 
 /* basic functions */
