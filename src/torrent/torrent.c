@@ -80,7 +80,7 @@ void Torrent_destroy(Torrent * this)
 void Torrent_print(Torrent *this){
     if(this){
         log_info("/**");
-        
+
         log_info("* Torrent Name :: %s", this->name);
         log_info("* Torrent Hash :: %s", this->hash);
 
@@ -139,20 +139,20 @@ int Torrent_parse(Torrent *this){
     this->trackers = NEW(Linkedlist);
     check_mem(this->trackers);
 
+    /* temporary buffers */
     char key_buffer[256];
     char value_buffer[256];
     memset(key_buffer, 0, 256);
     memset(value_buffer, 0, 256);
 
-    int str_pos = 0;
-    int key = 1;
-
+    int str_pos = 0; /* pos in magnet uri */
+    int key = 1; /* are we extracting a key or a value? */
     /* remove any solo key value pairs */
     /* this code skips over trackers as there may be many sharing the same key */
     for (int i = 0; sub_string[i] != '\0'; i++){
         switch(key){
             case 1:
-                if(sub_string[i] != '='){
+                if(sub_string[i] != '=' && str_pos < 256){
                     key_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
@@ -161,7 +161,7 @@ int Torrent_parse(Torrent *this){
                 }
                 break;
             case 0:
-                if(sub_string[i] != '&'){
+                if(sub_string[i] != '&' && str_pos < 256){
                     value_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
@@ -181,12 +181,14 @@ int Torrent_parse(Torrent *this){
         }
     }
 
+    /* name copy */
     this->name = NULL;
     const char * dn = hashmap->get(hashmap, "dn");
     this->name = malloc(strlen(dn) + 1);
     check_mem(this->name);
     strcpy(this->name, dn);
 
+    /* hash copy */
     this->hash = NULL;
     const char * xt = hashmap->get(hashmap, "xt");
     this->hash = malloc(strlen(xt) + 1);
