@@ -79,18 +79,18 @@ void Torrent_destroy(Torrent * this)
 */
 void Torrent_print(Torrent *this){
     if(this){
-        log_info("/**");
+        debug("/**");
 
-        log_info("* Torrent Name :: %s", this->name);
-        log_info("* Torrent Hash :: %s", this->hash);
+        debug("* Torrent Name :: %s", this->name);
+        debug("* Torrent Hash :: %s", this->hash);
 
         Linkednode * curr = this->trackers->head;        
         while(curr){
-            log_info("* Torrent Tracker :: %s", (char *)curr->value);
+            debug("* Torrent Tracker :: %s", (char *)curr->value);
             curr = curr->next;
         }
 
-        log_info("*/");
+        debug("*/");
     }
 }
 
@@ -131,7 +131,6 @@ int Torrent_parse(Torrent *this){
     torrent_content[torrent_size] = '\0';
 
     char * sub_string = torrent_content + 8;
-    log_info("%s", sub_string);
 
     Hashmap *hashmap = NULL;
     hashmap = NEW(Hashmap);
