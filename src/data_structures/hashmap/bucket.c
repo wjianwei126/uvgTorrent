@@ -72,8 +72,8 @@ void Bucket_destroy(Bucket *this){
 * PURPOSE : print a bucket struct
 */
 void Bucket_print(Bucket *this){
-    log_info("bucket key :: %s", this->key);
-    log_info("bucket hash :: %u", this->hash);
+    debug("bucket key :: %s", this->key);
+    debug("bucket hash :: %u", this->hash);
 };
 
 /**
