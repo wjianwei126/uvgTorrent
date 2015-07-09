@@ -172,7 +172,9 @@ int Torrent_parse(Torrent *this){
                             throw("parsing failed");
                         }
                     } else {
-                        this->trackers->append(this->trackers, value_buffer, strlen(value_buffer));
+                        if(this->trackers->append(this->trackers, value_buffer, strlen(value_buffer)) == EXIT_FAILURE){
+                            throw("parsing failed");
+                        }
                     }
                     memset(key_buffer, 0, 256);
                     memset(value_buffer, 0, 256);
