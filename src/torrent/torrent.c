@@ -21,6 +21,7 @@ Torrent *Torrent_new(size_t size, char *path)
     torrent->print= Torrent_print;
 
     torrent->parse = Torrent_parse;
+    torrent->announce = Torrent_announce;
 
     if(torrent->init(torrent, path) == EXIT_FAILURE) {
         throw("torrent init failed");
@@ -69,6 +70,10 @@ void Torrent_destroy(Torrent * this)
         if(this->name) { free(this->name);  };
         if(this->hash) { free(this->hash);  };
 
+        /* 
+            linked node stores structs as void *
+            therefore they must be casted and destroyed
+        */
         Linkednode * curr = this->trackers->head;        
         while(curr){
             Tracker * tracker = (Tracker *)curr->get(curr);
@@ -225,4 +230,14 @@ error:
     log_err("failed to parse torrent file :: %s", this->path);
 
 	return EXIT_FAILURE;
+}
+
+void Torrent_announce(Torrent *this)
+{
+    Linkednode * curr = this->trackers->head;        
+    while(curr){
+        Tracker * tracker = (Tracker *)curr->get(curr);
+        tracker->announce(tracker);
+        curr = curr->next;
+    }
 }

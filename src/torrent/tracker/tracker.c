@@ -15,6 +15,7 @@ Tracker *Tracker_new(size_t size, char *address)
     tracker->init = Tracker_init;
     tracker->destroy = Tracker_destroy;
     tracker->print= Tracker_print;
+    tracker->announce = Tracker_announce;
 
     if(tracker->init(tracker, address) == EXIT_FAILURE) {
         throw("tracker init failed");
@@ -35,9 +36,9 @@ int Tracker_init(Tracker *this, char *address)
 	char * addr = string_utils.urldecode(address);
 	Linkedlist * url_port = string_utils.split(addr, ':');
 
-    const char * port = (char *) url_port->get(url_port, 2);
-    const char * url = (char *) url_port->get(url_port, 1);
     const char * protocol = (char *) url_port->get(url_port, 0);
+    const char * url = (char *) url_port->get(url_port, 1);
+    const char * port = (char *) url_port->get(url_port, 2);
 
     this->port = malloc(strlen(port) + 1);
     check_mem(this->port);
@@ -69,4 +70,9 @@ void Tracker_destroy(Tracker *this)
 void Tracker_print(Tracker *this)
 {
 	debug("Torrent Tracker :: %s:%s", this->url, this->port);
+}
+
+void Tracker_announce(Tracker *this)
+{
+	log_info("TRACKER ANNOUNCE");
 }

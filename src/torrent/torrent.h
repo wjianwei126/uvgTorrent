@@ -11,6 +11,7 @@ struct Torrent {
     void (*destroy)(Torrent *this);
     
     int (*parse)(Torrent *this);
+    void (*announce)(Torrent *this);
 
     char * path;
     char * name;
@@ -25,5 +26,6 @@ void Torrent_destroy(Torrent *this);
 void Torrent_print(Torrent *this);
 
 int Torrent_parse(Torrent *this);
+void Torrent_announce(Torrent *this);
 
 #endif

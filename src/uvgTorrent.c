@@ -21,6 +21,9 @@ int main(int argc, char *argv[])
     if(torrent->parse(torrent) == EXIT_SUCCESS){
         /* print parsed torrent info */
         torrent->print(torrent);
+
+        /* print parsed torrent info */
+        torrent->announce(torrent);
     }
 
     /* cleanup */
