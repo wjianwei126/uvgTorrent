@@ -7,15 +7,15 @@
 #include <string.h>
 #include "data_structures/linkedlist/linkedlist.h"
 
-extern Linkedlist * string_split (char * input);
-extern char * string_urldecode (char * input);
-extern char * string_urlencode (char * input);
+Linkedlist * string_split (char * input);
+char * string_urldecode (char * input);
+int string_urlencode (char * input);
 
 static const struct
 {
     Linkedlist * (*split) (char * input);
     char * (*urldecode) (char * input);
-    char * (*urlencode) (char * input);
+    int (*urlencode) (char * input);
 } string_utils = {
     string_split,
     string_urldecode,

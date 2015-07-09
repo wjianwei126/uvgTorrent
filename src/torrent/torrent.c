@@ -79,8 +79,6 @@ void Torrent_destroy(Torrent * this)
 */
 void Torrent_print(Torrent *this){
     if(this){
-        debug("/**");
-
         debug("* Torrent Name :: %s", this->name);
         debug("* Torrent Hash :: %s", this->hash);
 
@@ -89,8 +87,6 @@ void Torrent_print(Torrent *this){
             debug("* Torrent Tracker :: %s", (char *)curr->value);
             curr = curr->next;
         }
-
-        debug("*/");
     }
 }
 
@@ -107,7 +103,7 @@ int Torrent_parse(Torrent *this){
     FILE *torrent_file = NULL;
 	char *torrent_content = NULL;
 
-    log_info("attempting to parse torrent file :: %s", this->path);
+    log_confirm("attempting to parse torrent file :: %s", this->path);
 
     torrent_file = fopen(this->path, "rb");
     if (!torrent_file){
@@ -185,9 +181,8 @@ int Torrent_parse(Torrent *this){
     /* name copy */
     this->name = NULL;
     const char * dn = hashmap->get(hashmap, "dn");
-    this->name = malloc(strlen(dn) + 1);
+    this->name = string_utils.urldecode((char *) dn);
     check_mem(this->name);
-    strcpy(this->name, dn);
 
     /* hash copy */
     this->hash = NULL;
@@ -200,7 +195,20 @@ int Torrent_parse(Torrent *this){
     hashmap->destroy(hashmap);
     fclose(torrent_file);
 	free(torrent_content);
+
+    Linkednode * curr = this->trackers->head;
+
+    while(curr)
+    {
+        char * url = string_utils.urldecode((char *) curr->get(curr));
+
+        curr->set(curr, url, strlen(url)+1);
+        curr = curr->next;
+        free(url);
+    }
     
+    fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+
 	return EXIT_SUCCESS;
 
 error:
@@ -209,8 +217,8 @@ error:
     if(torrent_file) { fclose(torrent_file); };
     if(this->name) { free(this->name); };
     if(this->hash) { free(this->hash); };
-    if(hashmap) { hashmap->destroy(hashmap); };
     
+    fprintf(stderr, " %s✗%s\n", KRED, KNRM);
     log_err("failed to parse torrent file :: %s", this->path);
 
 	return EXIT_FAILURE;
