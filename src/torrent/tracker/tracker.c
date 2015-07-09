@@ -46,7 +46,8 @@ int Tracker_init(Tracker *this, char *address)
     this->url = malloc(strlen(protocol) + strlen(":") + strlen(url) + 1);
     check_mem(this->url);
     strcpy(this->url, protocol);
-    strcat(this->url, url)
+    strcat(this->url, ":");
+    strcat(this->url, url);
 
     url_port->destroy(url_port);
     free(addr);
@@ -67,5 +68,5 @@ void Tracker_destroy(Tracker *this)
 
 void Tracker_print(Tracker *this)
 {
-
+	debug("Torrent Tracker :: %s:%s", this->url, this->port);
 }

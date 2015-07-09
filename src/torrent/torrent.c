@@ -89,17 +89,16 @@ void Torrent_destroy(Torrent * this)
 */
 void Torrent_print(Torrent *this){
     if(this){
-        debug("* Torrent Name :: %s", this->name);
-        debug("* Torrent Hash :: %s", this->hash);
+        debug("Torrent Name :: %s", this->name);
+        debug("Torrent Hash :: %s", this->hash);
 
-        /*
         Linkednode * curr = this->trackers->head;        
         while(curr){
-            Tracker * tracker = (Tracker *)curr;
-            debug("* Torrent Tracker :: %s:%s", tracker->url, tracker->port);
+            Tracker * tracker = (Tracker *)curr->value;
+            tracker->print(tracker);
             curr = curr->next;
         }
-        */
+        
     }
 }
 
