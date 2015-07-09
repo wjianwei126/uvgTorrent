@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include "utils/string_utils.h"
-#include "hashmap/hashmap.h"
+#include "data_structures/hashmap/hashmap.h"
 #include "torrent/torrent.h"
 
 Torrent *Torrent_new(size_t size, char *path)

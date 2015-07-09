@@ -13,7 +13,7 @@ clean:
 	rm -f bin/$(TARGET)
 
 build:
-	$(CC) $(INCLUDE) $(OBJECTS) $(FLAGS) -o bin/$(TARGET) $(wildcard src/*.c) $(wildcard src/*/*.c)
+	$(CC) $(INCLUDE) $(OBJECTS) $(FLAGS) -o bin/$(TARGET) $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard src/*/*/*.c)
 
 test:
 	valgrind --leak-check=full --track-origins=yes ./bin/$(TARGET) torrents/test.magnet

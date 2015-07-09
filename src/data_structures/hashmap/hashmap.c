@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "hashmap/hashmap.h"
+#include "data_structures/hashmap/hashmap.h"
 
 Hashmap *Hashmap_new(size_t size)
 {
