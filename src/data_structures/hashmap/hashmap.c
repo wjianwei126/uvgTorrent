@@ -125,7 +125,6 @@ const void * Hashmap_get(Hashmap *this, const char *key) {
     assert(key, "Hashmap :: provide key");
 
     uint32_t hash = this->get_hash(key, strlen(key));
-    log_info("Hashmap hash :: %u", hash);
 
     int exists = 0;
     int i = 0;

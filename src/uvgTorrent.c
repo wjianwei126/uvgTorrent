@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
     torrent = NEW(Torrent, argv[1]);
     check_mem(torrent);
 
-    if(torrent->parse(torrent)){
+    if(torrent->parse(torrent) == EXIT_SUCCESS){
         /* print parsed torrent info */
         torrent->print(torrent);
     }
