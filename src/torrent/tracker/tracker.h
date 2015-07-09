@@ -1,5 +1,5 @@
-#ifndef _torrent_h
-#define _torrent_h
+#ifndef _tracker_h
+#define _tracker_h
 
 #include "macro/macro.h"
 #include "data_structures/linkedlist/linkedlist.h"
