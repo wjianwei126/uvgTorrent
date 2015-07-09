@@ -9,10 +9,6 @@
 
 Tracker *Tracker_new(size_t size, char *address)
 {
-
-	string_utils.urldecode(address);
-    log_info("%s", address);
-
 	Tracker *tracker = malloc(size);
     check_mem(tracker);
 
@@ -34,12 +30,39 @@ error:
 
 int Tracker_init(Tracker *this, char *address)
 {
+	this->port = NULL;
+
+	char * addr = string_utils.urldecode(address);
+	Linkedlist * url_port = string_utils.split(addr, ':');
+
+    const char * port = (char *) url_port->get(url_port, 2);
+    const char * url = (char *) url_port->get(url_port, 1);
+    const char * protocol = (char *) url_port->get(url_port, 0);
+
+    this->port = malloc(strlen(port) + 1);
+    check_mem(this->port);
+    strcpy(this->port, port);
+
+    this->url = malloc(strlen(protocol) + strlen(":") + strlen(url) + 1);
+    check_mem(this->url);
+    strcpy(this->url, protocol);
+    strcat(this->url, url)
+
+    url_port->destroy(url_port);
+    free(addr);
+    
 	return EXIT_SUCCESS;
+error:
+	return EXIT_FAILURE;
 }
 
 void Tracker_destroy(Tracker *this)
 {
-
+	if(this){
+		if(this->port) { free(this->port); }
+		if(this->url) { free(this->url); }
+		free(this);
+	}
 }
 
 void Tracker_print(Tracker *this)

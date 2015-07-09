@@ -18,9 +18,23 @@ char to_hex(char code) {
 }
 
 
-Linkedlist * string_split (char * input)
+Linkedlist * string_split(char * input, char delimeter)
 {
 	Linkedlist * list = NEW(Linkedlist);
+	char buffer[256];
+  memset(buffer, 0, 256);
+	int str_pos = 0;
+	for (int i = 0; input[i] != '\0'; i++){
+		if(input[i] != ':' && i < strlen(input)){
+			buffer[str_pos] = input[i];
+      str_pos++;
+		} else {
+      list->append(list, buffer, strlen(buffer));
+      memset(buffer, 0, 256);
+			str_pos = 0;
+		}
+	}
+  list->append(list, buffer, strlen(buffer));
 
 	return list;
 }

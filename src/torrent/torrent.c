@@ -9,6 +9,7 @@
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/torrent.h"
+#include "torrent/tracker/tracker.h"
 
 Torrent *Torrent_new(size_t size, char *path)
 {
@@ -67,6 +68,15 @@ void Torrent_destroy(Torrent * this)
         if(this->path) { free(this->path);  };
         if(this->name) { free(this->name);  };
         if(this->hash) { free(this->hash);  };
+
+        Linkednode * curr = this->trackers->head;        
+        while(curr){
+            Tracker * tracker = (Tracker *)curr->get(curr);
+            tracker->destroy(tracker);
+            curr->value = NULL;
+            curr = curr->next;
+        }
+
         if(this->trackers) { this->trackers->destroy(this->trackers); };
         free(this);
     }
@@ -82,11 +92,14 @@ void Torrent_print(Torrent *this){
         debug("* Torrent Name :: %s", this->name);
         debug("* Torrent Hash :: %s", this->hash);
 
+        /*
         Linkednode * curr = this->trackers->head;        
         while(curr){
-            debug("* Torrent Tracker :: %s", (char *)curr->value);
+            Tracker * tracker = (Tracker *)curr;
+            debug("* Torrent Tracker :: %s:%s", tracker->url, tracker->port);
             curr = curr->next;
         }
+        */
     }
 }
 
@@ -156,7 +169,7 @@ int Torrent_parse(Torrent *this){
                 }
                 break;
             case 0:
-                if(sub_string[i] != '&' && str_pos < 256){
+                if(sub_string[i] != '&' && str_pos < 256 && i < strlen(sub_string)){
                     value_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
@@ -167,9 +180,11 @@ int Torrent_parse(Torrent *this){
                             throw("parsing failed");
                         }
                     } else {
-                        if(this->trackers->append(this->trackers, value_buffer, strlen(value_buffer)) == EXIT_FAILURE){
+                        Tracker *tracker = NEW(Tracker, value_buffer);
+                        if(this->trackers->append(this->trackers, tracker, sizeof(Tracker)) == EXIT_FAILURE){
                             throw("parsing failed");
                         }
+                        free(tracker);
                     }
                     memset(key_buffer, 0, 256);
                     memset(value_buffer, 0, 256);
@@ -195,17 +210,6 @@ int Torrent_parse(Torrent *this){
     hashmap->destroy(hashmap);
     fclose(torrent_file);
 	free(torrent_content);
-
-    Linkednode * curr = this->trackers->head;
-
-    while(curr)
-    {
-        char * url = string_utils.urldecode((char *) curr->get(curr));
-
-        curr->set(curr, url, strlen(url)+1);
-        curr = curr->next;
-        free(url);
-    }
     
     fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 

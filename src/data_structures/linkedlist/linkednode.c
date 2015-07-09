@@ -55,7 +55,9 @@ int Linkednode_init(Linkednode *this, const void * value, size_t value_size)
 
 void Linkednode_destroy(Linkednode *this){
 	if(this){
-		if(this->value) { free(this->value); }
+    	if(this->value) { 
+            free(this->value);
+        }
 		if(this->next) { this->next->destroy(this->next); }
 		free(this);
 	}

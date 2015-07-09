@@ -145,9 +145,7 @@ int Linkedlist_append(Linkedlist *this, const void *value, size_t value_size){
     this->end->next = node;
     this->end = node;
 
-
     this->count++;
-
 
     return EXIT_SUCCESS;
 error:
