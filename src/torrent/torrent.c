@@ -150,7 +150,7 @@ int Torrent_parse(Torrent *this){
     check_mem(hashmap);
     this->trackers = NEW(Linkedlist);
     check_mem(this->trackers);
-
+    
     /* temporary buffers */
     char key_buffer[256];
     char value_buffer[256];
@@ -214,19 +214,18 @@ int Torrent_parse(Torrent *this){
     hashmap->destroy(hashmap);
     fclose(torrent_file);
 	free(torrent_content);
-    
     fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
 	return EXIT_SUCCESS;
 
 error:
 	/* cleanup */
+    if(hashmap) { hashmap->destroy(hashmap); };
 	if(torrent_content) { free(torrent_content); };
     if(torrent_file) { fclose(torrent_file); };
     if(this->name) { free(this->name); };
     if(this->hash) { free(this->hash); };
     
-    fprintf(stderr, " %s✗%s\n", KRED, KNRM);
     log_err("failed to parse torrent file :: %s", this->path);
 
 	return EXIT_FAILURE;
