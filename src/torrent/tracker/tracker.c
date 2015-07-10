@@ -3,9 +3,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/uio.h>
+#include <netinet/in.h>
 #include "utils/string_utils.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/tracker/tracker.h"
+
 
 Tracker *Tracker_new(size_t size, char *address)
 {
@@ -72,7 +78,34 @@ void Tracker_print(Tracker *this)
 	debug("Torrent Tracker :: %s:%s", this->url, this->port);
 }
 
-void Tracker_announce(Tracker *this)
+int Tracker_announce(Tracker *this)
 {
-	log_info("TRACKER ANNOUNCE");
+    log_confirm("sending announce request :: %s:%s", this->url, this->port);
+
+	const char* hostname=this->url;
+	const char* portname=this->port;
+	struct addrinfo addr;
+	memset(&addr,0,sizeof(addr));
+	addr.ai_family=AF_UNSPEC;
+	addr.ai_socktype=SOCK_DGRAM;
+	addr.ai_protocol=0;
+	addr.ai_flags=AI_ADDRCONFIG;
+	struct addrinfo* res=0;
+	int err=getaddrinfo(hostname,portname,&addr,&res);
+	if (err!=0) {
+        fprintf(stderr, " %s✗%s\n", KRED, KNRM);
+        throw("failed to resolve remote socket address (err=%s)",strerror(err));
+	}
+
+    int fd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
+    if (fd==-1) {
+        throw("%s",strerror(errno));
+    }
+
+    fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+
+    return EXIT_SUCCESS;
+
+error: 
+    return EXIT_FAILURE;
 }

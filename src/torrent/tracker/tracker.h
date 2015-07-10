@@ -10,7 +10,7 @@ struct Tracker {
     void (*print)(Tracker *this);
     void (*destroy)(Tracker *this);
     
-    void (*announce)(Tracker *this);
+    int (*announce)(Tracker *this);
 
     char * url;
     char * port;
@@ -22,5 +22,5 @@ int Tracker_init(Tracker *this, char *address);
 void Tracker_destroy(Tracker *this);
 void Tracker_print(Tracker *this);
 
-void Tracker_announce(Tracker *this);
+int Tracker_announce(Tracker *this);
 #endif
