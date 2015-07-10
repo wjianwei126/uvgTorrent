@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include "utils/string_utils.h"
+#include "utils/str/string_utils.h"
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/torrent.h"
@@ -133,7 +133,7 @@ int Torrent_parse(Torrent *this){
     fseek(torrent_file, 0, SEEK_END);
     long torrent_size = ftell(torrent_file);
     rewind(torrent_file);
-
+    
     torrent_content = malloc(torrent_size+1);
     check_mem(torrent_content);
 
@@ -150,7 +150,7 @@ int Torrent_parse(Torrent *this){
     check_mem(hashmap);
     this->trackers = NEW(Linkedlist);
     check_mem(this->trackers);
-    
+
     /* temporary buffers */
     char key_buffer[256];
     char value_buffer[256];
@@ -159,12 +159,13 @@ int Torrent_parse(Torrent *this){
 
     int str_pos = 0; /* pos in magnet uri */
     int key = 1; /* are we extracting a key or a value? */
+    int input_len = strlen(sub_string) - 1;
     /* remove any solo key value pairs */
     /* this code skips over trackers as there may be many sharing the same key */
     for (int i = 0; sub_string[i] != '\0'; i++){
         switch(key){
             case 1:
-                if(sub_string[i] != '=' && str_pos < 256){
+                if(sub_string[i] != '=' && str_pos < 256 && i < input_len){
                     key_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
@@ -173,7 +174,7 @@ int Torrent_parse(Torrent *this){
                 }
                 break;
             case 0:
-                if(sub_string[i] != '&' && str_pos < 256 && i < strlen(sub_string)){
+                if(sub_string[i] != '&' && str_pos < 256 && i < input_len){
                     value_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
@@ -233,7 +234,7 @@ error:
 
 void Torrent_announce(Torrent *this)
 {
-    Linkednode * curr = this->trackers->head;        
+    Linkednode * curr = this->trackers->head;  
     while(curr){
         Tracker * tracker = (Tracker *)curr->get(curr);
         tracker->announce(tracker);
