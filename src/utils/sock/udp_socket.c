@@ -86,7 +86,7 @@ int UDP_Socket_connect(UDP_Socket *this)
 
     /* local address */
     struct sockaddr_in localaddr, remaddr;
-    int fd, slen=sizeof(remaddr);
+    int fd;
     unsigned int addrlen;
 
     // create local socket
@@ -121,10 +121,10 @@ int UDP_Socket_connect(UDP_Socket *this)
     memcpy((void *)this->local_addr, &localaddr, sizeof(localaddr));
     memcpy(this->sock_desc, &fd, sizeof(int));
     memcpy((void *)this->remote_addr, &remaddr, sizeof(remaddr));
-        //if (sendto(fd, buf, strlen(buf), 0, (struct sockaddr *)&remaddr, slen)==-1){
 
 	return EXIT_SUCCESS;
 
 error:
+	this->destroy(this);
 	return EXIT_FAILURE;
 }
