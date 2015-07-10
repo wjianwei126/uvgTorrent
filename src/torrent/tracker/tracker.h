@@ -13,6 +13,7 @@ struct Tracker {
     int (*announce)(Tracker *this);
 
     char * url;
+    char * ip;
     char * port;
 };
 

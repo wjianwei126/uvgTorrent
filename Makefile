@@ -1,6 +1,6 @@
 CC=/usr/bin/gcc
-FLAGS=-Wall -g -D_POSIX_SOURCE -std=c11
-TARGET=uvgTorrent
+FLAGS=-Wall -g -D_POSIX_SOURCE -std=c11 -D_BSD_SOURCE 
+TARGET=uvgTorrent 
 INCLUDE=-Isrc
 OBJECTS=
 

@@ -3,15 +3,17 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
-#include <sys/socket.h>
-#include <sys/uio.h>
-#include <netinet/in.h>
-#include "utils/string_utils.h"
+#include "utils/str/string_utils.h"
+#include "utils/net/net_utils.h"
+#include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/tracker/tracker.h"
-
 
 Tracker *Tracker_new(size_t size, char *address)
 {
@@ -42,19 +44,19 @@ int Tracker_init(Tracker *this, char *address)
 	char * addr = string_utils.urldecode(address);
 	Linkedlist * url_port = string_utils.split(addr, ':');
 
-    const char * protocol = (char *) url_port->get(url_port, 0);
-    const char * url = (char *) url_port->get(url_port, 1);
+    const char * url = (char *) url_port->get(url_port, 1) + 2;
     const char * port = (char *) url_port->get(url_port, 2);
 
     this->port = malloc(strlen(port) + 1);
     check_mem(this->port);
     strcpy(this->port, port);
 
-    this->url = malloc(strlen(protocol) + strlen(":") + strlen(url) + 1);
+    this->url = calloc(1,strlen(url) + 1);
     check_mem(this->url);
-    strcpy(this->url, protocol);
-    strcat(this->url, ":");
     strcat(this->url, url);
+
+    this->ip = malloc(32);
+    net_utils.hostname_to_ip(this->url, this->ip);
 
     url_port->destroy(url_port);
     free(addr);
@@ -69,6 +71,7 @@ void Tracker_destroy(Tracker *this)
 	if(this){
 		if(this->port) { free(this->port); }
 		if(this->url) { free(this->url); }
+        if(this->ip) { free(this->ip); }
 		free(this);
 	}
 }
@@ -82,30 +85,28 @@ int Tracker_announce(Tracker *this)
 {
     log_confirm("sending announce request :: %s:%s", this->url, this->port);
 
-	const char* hostname=this->url;
-	const char* portname=this->port;
-	struct addrinfo addr;
-	memset(&addr,0,sizeof(addr));
-	addr.ai_family=AF_UNSPEC;
-	addr.ai_socktype=SOCK_DGRAM;
-	addr.ai_protocol=0;
-	addr.ai_flags=AI_ADDRCONFIG;
-	struct addrinfo* res=0;
-	int err=getaddrinfo(hostname,portname,&addr,&res);
-	if (err!=0) {
-        fprintf(stderr, " %s✗%s\n", KRED, KNRM);
-        throw("failed to resolve remote socket address (err=%s)",strerror(err));
-	}
+    char buf[2048];
 
-    int fd=socket(res->ai_family,res->ai_socktype,res->ai_protocol);
-    if (fd==-1) {
-        throw("%s",strerror(errno));
+    UDP_Socket * udp = NEW(UDP_Socket, this->ip, atoi(this->port));
+    udp->connect(udp);
+
+    // send packet
+    int i = 0;
+    for (i=0; i < 2; i++) {
+        //printf("Sending packet %d to %s port %d\n", i, this->url, atoi(this->port));
+        sprintf(buf, "This is packet %d", i);
+        if (sendto(*udp->sock_desc, buf, strlen(buf), 0, (const struct sockaddr *)udp->remote_addr, sizeof(*udp->remote_addr))==-1){
+            throw("send failed");
+        }
     }
+
+    udp->destroy(udp);
 
     fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
     return EXIT_SUCCESS;
 
 error: 
+    if(udp){ udp->destroy(udp); };
     return EXIT_FAILURE;
 }
