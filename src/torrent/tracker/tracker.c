@@ -88,19 +88,19 @@ int Tracker_announce(Tracker *this)
     char buf[2048];
 
     UDP_Socket * udp = NEW(UDP_Socket, this->ip, atoi(this->port));
-    udp->connect(udp);
-
-    // send packet
-    int i = 0;
-    for (i=0; i < 2; i++) {
-        //printf("Sending packet %d to %s port %d\n", i, this->url, atoi(this->port));
-        sprintf(buf, "This is packet %d", i);
-        if (sendto(*udp->sock_desc, buf, strlen(buf), 0, (const struct sockaddr *)udp->remote_addr, sizeof(*udp->remote_addr))==-1){
-            throw("send failed");
+    int result = udp->connect(udp);
+    if(result == EXIT_SUCCESS){
+        // send packet
+        int i = 0;
+        for (i=0; i < 2; i++) {
+            //printf("Sending packet %d to %s port %d\n", i, this->url, atoi(this->port));
+            sprintf(buf, "This is packet %d", i);
+            if (sendto(*udp->sock_desc, buf, strlen(buf), 0, (const struct sockaddr *)udp->remote_addr, sizeof(*udp->remote_addr))==-1){
+                throw("send failed");
+            }
         }
+        udp->destroy(udp);
     }
-
-    udp->destroy(udp);
 
     fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
