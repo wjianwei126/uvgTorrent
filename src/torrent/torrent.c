@@ -74,7 +74,8 @@ void Torrent_destroy(Torrent * this)
 
         /* 
             linked node stores structs as void *
-            therefore they must be casted and destroyed
+            therefore they must be casted and 
+            manually destroyed
         */
         Linkednode * curr = this->trackers->head;        
         while(curr){

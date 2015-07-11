@@ -22,11 +22,14 @@ int main(int argc, char *argv[])
         /* print parsed torrent info */
         torrent->print(torrent);
 
-        /* print parsed torrent info */
+        /* connect to trackers */
         int connected = torrent->connect(torrent);
         if(connected == EXIT_FAILURE){
             throw("torrent failed to connect to trackers");
         }
+
+        /* announce to trackers */
+        // code here
     }
 
     /* cleanup */

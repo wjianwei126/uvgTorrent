@@ -1,3 +1,14 @@
+/**
+* Hashmap object
+* 
+* AUTHOR: Simon Bursten 
+*           (unovongalivor - https://github.com/unovongalixor/uvgTorrent)
+*
+* NOTES: if an object which needs to be destroyed with a call to the
+*        destroy function is stored in a Hashmap the owner object must
+*        make sure to loop through each of the Buckets, cast their values manually
+*        and destroy them before calling Hashmap->destroy(Hashmap)
+*/
 #include "debug/debug.h"
 #include <errno.h>
 #include <stdio.h>
