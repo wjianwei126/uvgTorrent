@@ -23,5 +23,5 @@ int Tracker_init(Tracker *this, char *address);
 void Tracker_destroy(Tracker *this);
 void Tracker_print(Tracker *this);
 
-int Tracker_announce(Tracker *this);
+int Tracker_connect(Tracker *this);
 #endif

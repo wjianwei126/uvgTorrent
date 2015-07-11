@@ -21,8 +21,10 @@ UDP_Socket *UDP_Socket_new(size_t size, char *ip, int port)
     udp_sock->init = UDP_Socket_init;
     udp_sock->destroy = UDP_Socket_destroy;
     udp_sock->print= UDP_Socket_print;
-    udp_sock->connect = UDP_Socket_connect;
 
+    udp_sock->connect = UDP_Socket_connect;
+    udp_sock->send = UDP_Socket_send;
+    udp_sock->receive = UDP_Socket_receive;
     if(udp_sock->init(udp_sock, ip, port) == EXIT_FAILURE) {
         throw("udp socket init failed");
     } else {
@@ -127,4 +129,38 @@ int UDP_Socket_connect(UDP_Socket *this)
 error:
 	this->destroy(this);
 	return EXIT_FAILURE;
+}
+
+int UDP_Socket_receive(UDP_Socket *this, void * output)
+{
+    int fd = *this->sock_desc;
+    struct sockaddr_storage src_addr;
+
+    char buffer[2048];
+    socklen_t src_addr_len=sizeof(src_addr);
+    ssize_t count=recvfrom(fd,buffer,sizeof(buffer),0,(struct sockaddr*)&src_addr,&src_addr_len);
+    if (count==-1) {
+        throw("%s",strerror(errno));
+    } else if (count==sizeof(buffer)) {
+        log_warn("datagram too large for buffer: truncated");
+    } else {
+        memcpy(output, buffer, count);
+        //handle_datagram(buffer,count);
+    }
+
+    return EXIT_SUCCESS;
+
+error:
+    return EXIT_FAILURE;
+}
+
+int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size)
+{
+    if (sendto(*this->sock_desc, message, message_size, 0, (const struct sockaddr *)this->remote_addr, sizeof(*this->remote_addr))==-1){
+        throw("send failed");
+    }
+
+    return EXIT_SUCCESS;
+error:
+    return EXIT_FAILURE;
 }

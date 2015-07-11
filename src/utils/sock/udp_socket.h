@@ -10,6 +10,8 @@ struct UDP_Socket {
     void (*destroy)(UDP_Socket *this);
     
     int (*connect)(UDP_Socket *this);
+    int (*send)(UDP_Socket *this, void * message, size_t message_size);
+    int (*receive)(UDP_Socket *this, void * output);
 
     char * ip;
     int * port;
@@ -26,5 +28,7 @@ void UDP_Socket_destroy(UDP_Socket *this);
 void UDP_Socket_print(UDP_Socket *this);
 
 int UDP_Socket_connect(UDP_Socket *this);
+int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size);
+int UDP_Socket_receive(UDP_Socket *this, void * output);
 
 #endif

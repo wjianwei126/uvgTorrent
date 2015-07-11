@@ -3,17 +3,20 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
+#include <endian.h>
 #include "utils/str/string_utils.h"
 #include "utils/net/net_utils.h"
 #include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/tracker/tracker.h"
+#include "torrent/tracker/tracker_packets.h"
 
 Tracker *Tracker_new(size_t size, char *address)
 {
@@ -23,7 +26,7 @@ Tracker *Tracker_new(size_t size, char *address)
     tracker->init = Tracker_init;
     tracker->destroy = Tracker_destroy;
     tracker->print= Tracker_print;
-    tracker->announce = Tracker_announce;
+    tracker->announce = Tracker_connect;
 
     if(tracker->init(tracker, address) == EXIT_FAILURE) {
         throw("tracker init failed");
@@ -81,25 +84,36 @@ void Tracker_print(Tracker *this)
 	debug("Torrent Tracker :: %s:%s", this->url, this->port);
 }
 
-int Tracker_announce(Tracker *this)
+uint64_t nw_order(const uint64_t in) {
+    unsigned char out[8] = {in>>56,in>>48,in>>40,in>>32,in>>24,in>>16,in>>8,in};
+    return *(uint64_t*)out;
+}
+
+int Tracker_connect(Tracker *this)
 {
     log_confirm("sending announce request :: %s:%s", this->url, this->port);
 
-    char buf[2048];
-
+    struct tracker_connect_request conn_request;
+    conn_request.connection_id = htonll(0x41727101980);
+    conn_request.action = htonl(0);
+    conn_request.transaction_id = htonl(112);
     UDP_Socket * udp = NEW(UDP_Socket, this->ip, atoi(this->port));
+    //UDP_Socket * udp = NEW(UDP_Socket, "127.0.0.1", 20);
     int result = udp->connect(udp);
     if(result == EXIT_SUCCESS){
         // send packet
-        int i = 0;
-        for (i=0; i < 2; i++) {
-            //printf("Sending packet %d to %s port %d\n", i, this->url, atoi(this->port));
-            sprintf(buf, "This is packet %d", i);
-            if (sendto(*udp->sock_desc, buf, strlen(buf), 0, (const struct sockaddr *)udp->remote_addr, sizeof(*udp->remote_addr))==-1){
-                throw("send failed");
-            }
-        }
+        udp->send(udp, &conn_request, 16);
+
+        void * out = malloc(2048);
+        udp->receive(udp, out);
+
+        struct tracker_connect_response * test = out;
+        log_info("%d", test->action);
+
+        free(out);
         udp->destroy(udp);
+    } else {
+        throw("failed to connect to tracker");
     }
 
     fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
