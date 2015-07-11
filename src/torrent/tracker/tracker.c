@@ -13,6 +13,7 @@
 #include <endian.h>
 #include "utils/str/string_utils.h"
 #include "utils/net/net_utils.h"
+#include "utils/rand/rand_utils.h"
 #include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/tracker/tracker.h"
@@ -92,9 +93,9 @@ int Tracker_connect(Tracker *this)
     struct tracker_connect_request conn_request;
     conn_request.connection_id = htonll(0x41727101980);
     conn_request.action = htonl(0);
-    conn_request.transaction_id = htonl(112);
+    conn_request.transaction_id = htonl(rand_utils.nrand32(100));
+    
     UDP_Socket * udp = NEW(UDP_Socket, this->ip, atoi(this->port));
-    //UDP_Socket * udp = NEW(UDP_Socket, "127.0.0.1", 20);
     int result = udp->connect(udp);
     if(result == EXIT_SUCCESS){
         // send packet
