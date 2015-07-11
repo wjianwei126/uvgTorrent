@@ -10,11 +10,12 @@ struct Tracker {
     void (*print)(Tracker *this);
     void (*destroy)(Tracker *this);
     
-    int (*announce)(Tracker *this);
+    int (*connect)(Tracker *this);
 
     char * url;
     char * ip;
     char * port;
+    int connected;
 };
 
 /* basic functions */
