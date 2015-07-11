@@ -28,7 +28,7 @@ int hostname_to_ip(char * hostname , char* output)
     addr_list = (struct in_addr **) he->h_addr_list;
     for(i = 0; addr_list[i] != NULL; i++) 
     {
-        strcpy(ip , inet_ntoa(*addr_list[i]) );
+        strcpy(output , inet_ntoa(*addr_list[i]) );
         return EXIT_SUCCESS;
     }
      
