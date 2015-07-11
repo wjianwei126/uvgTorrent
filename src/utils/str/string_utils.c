@@ -6,6 +6,7 @@
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/linkedlist/linkedlist.h"
 
+/* inline functions */
 /* Converts a hex character to its integer value */
 char from_hex(char ch) {
   return isdigit(ch) ? ch - '0' : tolower(ch) - 'a' + 10;
@@ -17,7 +18,16 @@ char to_hex(char code) {
   return hex[code & 15];
 }
 
-
+/**
+* Linkedlist * string_split(char * input, char delimeter)
+*
+* char    *input; string to split
+* char    delimeter;
+* 
+* PURPOSE : split a string, return linked list of sub strings
+* RETURN  : Linkedlist * list of seperated strings
+* NOTES   : Linkedlist * returned needs to be destroyed
+*/
 Linkedlist * string_split(char * input, char delimeter)
 {
 	Linkedlist * list = NEW(Linkedlist);
@@ -39,8 +49,16 @@ Linkedlist * string_split(char * input, char delimeter)
 	return list;
 }
 
-/* return value must be freed */
-char * string_urldecode(char * input) {
+/**
+* char * string_urldecode(char * input)
+*
+* char    *input; string to decode
+* 
+* PURPOSE : decode a string
+* RETURN  : url decoded string
+*/
+char * string_urldecode(char * input) 
+{
   char *pstr = input, *buf = malloc(strlen(input) + 1), *pbuf = buf;
   while (*pstr) {
     if (*pstr == '%') {
@@ -59,7 +77,14 @@ char * string_urldecode(char * input) {
   return buf;
 }
 
-/* return value must be freed */
+/**
+* char * string_urlencode(char * input)
+*
+* char    *input; string to encode
+* 
+* PURPOSE : encode a string
+* RETURN  : url encoded string
+*/
 char * string_urlencode(char * input)
 {
 	char *pstr = input, *buf = malloc(strlen(input) * 3 + 1), *pbuf = buf;
