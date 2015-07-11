@@ -1,6 +1,8 @@
 /**
 * UDP tracker protocol
 * http://www.libtorrent.org/udp_tracker_protocol.html
+*
+* structs are packed to ensure alignment regardless of environment
 */
 
 struct __attribute__ ((__packed__)) tracker_connect_request 

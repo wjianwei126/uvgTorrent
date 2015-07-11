@@ -1,3 +1,15 @@
+/**
+* Linkedlist object
+* 
+* AUTHOR: Simon Bursten 
+*           (unovongalivor - https://github.com/unovongalixor/uvgTorrent)
+*
+* NOTES: if an object which needs to be destroyed with a call to the
+*        destroy function is stored in a Linkedlist the owner object just
+*        make sure to loop through Linkednodes, cast their values manually
+*        and destroy them before calling Linkedlist->destroy(Linkedlist)
+*/
+
 #include "debug/debug.h"
 #include <errno.h>
 #include <stdio.h>
