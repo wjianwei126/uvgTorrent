@@ -73,9 +73,6 @@ int Tracker_init(Tracker *this, char *address)
     check_mem(this->url);
     strcat(this->url, url);
 
-    this->ip = malloc(32);
-    net_utils.hostname_to_ip(this->url, this->ip);
-
     this->last_transaction_id = malloc(sizeof(uint32_t));
     check_mem(this->last_transaction_id);
 
@@ -118,6 +115,10 @@ void Tracker_print(Tracker *this)
 int Tracker_connect(Tracker *this)
 {
     log_confirm("sending connect request :: %s:%s", this->url, this->port);
+
+    // make dns request to get tracker ip
+    this->ip = malloc(32);
+    net_utils.hostname_to_ip(this->url, this->ip);
 
     this->generate_transID(this);
 
