@@ -7,11 +7,11 @@
 #include <string.h>
 
 
-int hostname_to_ip(char * hostname , char* ip);
+int hostname_to_ip(char * hostname , char* output);
 
 static const struct
 {
-    int (*hostname_to_ip) (char * hostname , char* ip);
+    int (*hostname_to_ip) (char * hostname , char* output);
 } net_utils = {
     hostname_to_ip
 };

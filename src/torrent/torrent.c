@@ -171,6 +171,7 @@ int Torrent_parse(Torrent *this){
                     key_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
+                    if(i == input_len) { key_buffer[str_pos] = sub_string[i]; };
                     key = 0;
                     str_pos = 0;
                 }
@@ -180,6 +181,7 @@ int Torrent_parse(Torrent *this){
                     value_buffer[str_pos] = sub_string[i];
                     str_pos++;
                 } else {
+                    if(i == input_len) { value_buffer[str_pos] = sub_string[i]; };
                     key = 1;
                     str_pos = 0;
                     if(strcmp(key_buffer, "tr") != 0){
