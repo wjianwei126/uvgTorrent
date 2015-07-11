@@ -116,7 +116,6 @@ void Torrent_print(Torrent *this){
 * RETURN  : success bool
 * NOTES   : if file was successfully parsed the torrents 
 *           magnet_data hashmap will be ready for use
-*
 */
 int Torrent_parse(Torrent *this){
     FILE *torrent_file = NULL;
@@ -235,6 +234,13 @@ error:
 	return EXIT_FAILURE;
 }
 
+/*
+* int Torrent_connect(Torrent *this)
+* 
+* PURPOSE : send a connect request to every tracker
+* RETURN  : success bool
+* NOTES   : if no trackers are available, throw and error
+*/
 int Torrent_connect(Torrent *this)
 {
     int success = 1; // returns 1 if at least 
