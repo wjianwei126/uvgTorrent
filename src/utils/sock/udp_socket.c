@@ -97,6 +97,13 @@ int UDP_Socket_connect(UDP_Socket *this)
         return 0;
     }
 
+    struct timeval timeout;
+
+    timeout.tv_sec = 2;  /* 30 Secs Timeout */
+    timeout.tv_usec = 0;
+
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(struct timeval));
+
     // bind local socket
     memset((void *)&localaddr, 0, sizeof(localaddr));
     localaddr.sin_family = AF_INET;
@@ -139,13 +146,15 @@ int UDP_Socket_receive(UDP_Socket *this, void * output)
     char buffer[2048];
     socklen_t src_addr_len=sizeof(src_addr);
     ssize_t count=recvfrom(fd,buffer,sizeof(buffer),0,(struct sockaddr*)&src_addr,&src_addr_len);
-    if (count==-1) {
-        throw("%s",strerror(errno));
-    } else if (count==sizeof(buffer)) {
+    if (count==sizeof(buffer)) {
         log_warn("datagram too large for buffer: truncated");
     } else {
-        memcpy(output, buffer, count);
-        //handle_datagram(buffer,count);
+        if (count != -1) {
+            memcpy(output, buffer, count);
+            check_mem(output);
+        } else {
+            return EXIT_FAILURE;
+        }
     }
 
     return EXIT_SUCCESS;

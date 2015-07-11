@@ -21,7 +21,7 @@ Torrent *Torrent_new(size_t size, char *path)
     torrent->print= Torrent_print;
 
     torrent->parse = Torrent_parse;
-    torrent->announce = Torrent_announce;
+    torrent->connect = Torrent_connect;
 
     if(torrent->init(torrent, path) == EXIT_FAILURE) {
         throw("torrent init failed");
@@ -51,7 +51,9 @@ int Torrent_init(Torrent *this, char *path)
 	this->path = NULL;
     this->name = NULL;
     this->hash = NULL;
+    this->connected_trackers = 0;
     this->trackers = NULL;
+
 
 	this->path = malloc(strlen(path) + 1);
     check_mem(this->path);
@@ -160,6 +162,7 @@ int Torrent_parse(Torrent *this){
     int str_pos = 0; /* pos in magnet uri */
     int key = 1; /* are we extracting a key or a value? */
     int input_len = strlen(sub_string) - 1;
+
     /* remove any solo key value pairs */
     /* this code skips over trackers as there may be many sharing the same key */
     for (int i = 0; sub_string[i] != '\0'; i++){
@@ -232,12 +235,25 @@ error:
 	return EXIT_FAILURE;
 }
 
-void Torrent_announce(Torrent *this)
+int Torrent_connect(Torrent *this)
 {
-    Linkednode * curr = this->trackers->head;  
+    int success = 1; // returns 1 if at least 
+    this->connected_trackers = 0;
+    Linkednode * curr = this->trackers->head;
     while(curr){
         Tracker * tracker = (Tracker *)curr->get(curr);
-        tracker->announce(tracker);
+        int status = tracker->connect(tracker);
+        success |= status;
+        if(status == EXIT_SUCCESS) { this->connected_trackers++; };
         curr = curr->next;
     }
+
+    assert(success == 1, "%d out of %d trackers connected", this->connected_trackers, this->trackers->count + 1);
+
+    log_info("%d out of %d trackers connected", this->connected_trackers, this->trackers->count + 1);
+
+    return EXIT_SUCCESS;
+
+error:
+    return EXIT_FAILURE;
 }
