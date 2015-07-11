@@ -37,6 +37,16 @@ error:
     return NULL;
 }
 
+/**
+* int UDP_Socket_init(UDP_Socket *this, char *ip, int port)
+*
+* UDP_Socket    *this; instance to initialize
+* char          *ip; remote ip 
+* int           *port; remote port 
+* 
+* PURPOSE : set up a new socket connection
+* RETURN  : success bool
+*/
 int UDP_Socket_init(UDP_Socket *this, char *ip, int port)
 {
 	this->ip = NULL;
@@ -79,6 +89,14 @@ void UDP_Socket_print(UDP_Socket *this)
 
 }
 
+/**
+* int UDP_Socket_connect(UDP_Socket *this)
+*
+* UDP_Socket    *this; instance to initialize
+* 
+* PURPOSE : bind, name and connect a new socket
+* RETURN  : success bool
+*/
 int UDP_Socket_connect(UDP_Socket *this)
 {
 	/* local address */
@@ -138,6 +156,15 @@ error:
 	return EXIT_FAILURE;
 }
 
+/**
+* int UDP_Socket_receive(UDP_Socket *this, void * output)
+*
+* UDP_Socket    *this; instance to initialize
+* void          *output; output pointer
+* 
+* PURPOSE : copy socket response into output
+* RETURN  : success bool
+*/
 int UDP_Socket_receive(UDP_Socket *this, void * output)
 {
     int fd = *this->sock_desc;
@@ -163,6 +190,16 @@ error:
     return EXIT_FAILURE;
 }
 
+/**
+* int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size)
+*
+* UDP_Socket    *this; instance to initialize
+* void          *message; packet to send (packed struct)
+* size_t        message_size; size of the package
+* 
+* PURPOSE : send a packet (packed struct) to remote server
+* RETURN  : success bool
+*/
 int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size)
 {
     if (sendto(*this->sock_desc, message, message_size, 0, (const struct sockaddr *)this->remote_addr, sizeof(*this->remote_addr))==-1){
