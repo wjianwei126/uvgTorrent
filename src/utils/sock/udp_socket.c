@@ -74,8 +74,10 @@ error:
 void UDP_Socket_destroy(UDP_Socket *this)
 {
 	if(this){
-		close((int) *this->sock_desc);
-		free(this->sock_desc);
+        if(this->sock_desc){
+            close((int) *this->sock_desc);
+            free(this->sock_desc);
+        }
 		if(this->ip) { free(this->ip); };
 		if(this->port) { free(this->port); };
 		if(this->local_addr) { free((void *)this->local_addr); };
@@ -152,7 +154,10 @@ int UDP_Socket_connect(UDP_Socket *this)
 	return EXIT_SUCCESS;
 
 error:
-	this->destroy(this);
+    close(fd);
+    free(this->sock_desc);
+    this->sock_desc = NULL;
+    
 	return EXIT_FAILURE;
 }
 

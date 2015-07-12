@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         }
 
         /* announce to trackers */
-        // code here
+        torrent->announce(torrent);
     }
 
     /* cleanup */

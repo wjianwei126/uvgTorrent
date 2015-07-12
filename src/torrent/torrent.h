@@ -12,6 +12,7 @@ struct Torrent {
     
     int (*parse)(Torrent *this);
     int (*connect)(Torrent *this);
+    int (*announce)(Torrent *this);
 
     char * path;
     char * name;
@@ -28,5 +29,6 @@ void Torrent_print(Torrent *this);
 
 int Torrent_parse(Torrent *this);
 int Torrent_connect(Torrent *this);
+int Torrent_announce(Torrent *this);
 
 #endif

@@ -144,6 +144,8 @@ int Tracker_connect(Tracker *this)
             this->connected = 1;
             struct tracker_connect_response * resp = out;
             if(resp->action == 0 && *this->last_transaction_id == resp->transaction_id){
+                this->connected = 1;
+                
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
                 free(out);

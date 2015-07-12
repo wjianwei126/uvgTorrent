@@ -22,6 +22,7 @@ Torrent *Torrent_new(size_t size, char *path)
 
     torrent->parse = Torrent_parse;
     torrent->connect = Torrent_connect;
+    torrent->announce = Torrent_announce;
 
     if(torrent->init(torrent, path) == EXIT_FAILURE) {
         throw("torrent init failed");
@@ -265,4 +266,9 @@ int Torrent_connect(Torrent *this)
 
 error:
     return EXIT_FAILURE;
+}
+
+int Torrent_announce(Torrent *this)
+{
+    return EXIT_SUCCESS;
 }
