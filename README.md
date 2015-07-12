@@ -24,4 +24,4 @@ To explore the torrent protocol. uvgTorrent will allow a user to input a magnet 
 
 # Notes
 
-run with "make"
+run with "make". will run via valgrind.
