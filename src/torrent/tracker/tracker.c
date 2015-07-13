@@ -110,7 +110,7 @@ void Tracker_print(Tracker *this)
 /**
 * int Tracker_connect(Tracker *this)
 *
-* Tracker    *this; instance to initialize
+* Tracker    *this;
 * 
 * PURPOSE : send a connect request to the tracker, check if online
 * RETURN  : success bool
@@ -182,11 +182,9 @@ error:
 *
 * Tracker    *this; instance to initialize
 * 
-* PURPOSE : send a connect request to the tracker, check if online
+* PURPOSE : send an announce request to the tracker, retreive peer information
 * RETURN  : success bool
-* NOTES   : fails without throwing an error. the torrent which is
-*           spawning will determine if all of the trackers have failed
-*           and will throw and error if needed.
+* NOTES   : fails without throwing an error.
 */
 int Tracker_announce(Tracker *this)
 {
@@ -199,8 +197,8 @@ int Tracker_announce(Tracker *this)
     struct tracker_announce_request conn_request;
     conn_request.connection_id = htonll(this->connection_id); /* identifies protocol - don't change */
     conn_request.action = htonl(1);
-    conn_request.transaction_id = transID; 
-
+    conn_request.transaction_id = transID;
+    
     return EXIT_SUCCESS;
 
 error:
