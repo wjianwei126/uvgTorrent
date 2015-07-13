@@ -260,7 +260,7 @@ int Torrent_connect(Torrent *this)
 
     assert(success == 1, "%d out of %d trackers connected", this->connected_trackers, this->trackers->count + 1);
 
-    log_info("%d out of %d trackers connected", this->connected_trackers, this->trackers->count + 1);
+    log_info(KGRN "%d out of %d trackers connected" KBLU, this->connected_trackers, this->trackers->count + 1);
 
     return EXIT_SUCCESS;
 
@@ -270,5 +270,15 @@ error:
 
 int Torrent_announce(Torrent *this)
 {
+    int success = 1; // returns 1 if at least 
+
+    Linkednode * curr = this->trackers->head;
+    while(curr){
+        Tracker * tracker = (Tracker *)curr->get(curr);
+        int status = tracker->announce(tracker);
+        success |= status;
+        curr = curr->next;
+    }
+
     return EXIT_SUCCESS;
 }

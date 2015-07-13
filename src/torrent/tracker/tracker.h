@@ -12,12 +12,14 @@ struct Tracker {
     void (*destroy)(Tracker *this);
     
     int (*connect)(Tracker *this);
+    int (*announce)(Tracker *this);
     void (*generate_transID)(Tracker *this);
 
     char * url;
     char * ip;
     char * port;
     int connected;
+    uint32_t * connection_id;
     uint32_t * last_transaction_id;
 
     UDP_Socket * tracker_socket;
@@ -30,5 +32,6 @@ void Tracker_destroy(Tracker *this);
 void Tracker_print(Tracker *this);
 
 int Tracker_connect(Tracker *this);
+int Tracker_announce(Tracker *this);
 void Tracker_generate_transID(Tracker *this);
 #endif

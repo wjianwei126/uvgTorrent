@@ -1,6 +1,7 @@
 /**
 * UDP tracker protocol
 * http://www.libtorrent.org/udp_tracker_protocol.html
+* http://www.bittorrent.org/beps/bep_0020.html
 *
 * structs are packed to ensure alignment regardless of environment
 */

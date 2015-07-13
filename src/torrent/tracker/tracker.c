@@ -29,6 +29,7 @@ Tracker *Tracker_new(size_t size, char *address)
     tracker->print= Tracker_print;
     
     tracker->connect = Tracker_connect;
+    tracker->announce = Tracker_announce;
     tracker->generate_transID = Tracker_generate_transID;
 
     if(tracker->init(tracker, address) == EXIT_FAILURE) {
@@ -56,6 +57,7 @@ int Tracker_init(Tracker *this, char *address)
 {
 	this->port = NULL;
     this->tracker_socket = NULL;
+    this->connection_id = 0;
     this->last_transaction_id = 0;
     this->connected = 0;
 
@@ -76,6 +78,9 @@ int Tracker_init(Tracker *this, char *address)
     this->last_transaction_id = malloc(sizeof(uint32_t));
     check_mem(this->last_transaction_id);
 
+    this->connection_id = malloc(sizeof(uint32_t));
+    check_mem(this->connection_id);
+
     url_port->destroy(url_port);
     free(addr);
     
@@ -91,6 +96,7 @@ void Tracker_destroy(Tracker *this)
 		if(this->url) { free(this->url); }
         if(this->ip) { free(this->ip); }
         if(this->last_transaction_id) { free(this->last_transaction_id); }
+        if(this->connection_id) { free(this->connection_id); }
         if(this->tracker_socket){ this->tracker_socket->destroy(this->tracker_socket); }
 		free(this);
 	}
@@ -146,7 +152,11 @@ int Tracker_connect(Tracker *this)
             if(resp->action == 0 && *this->last_transaction_id == resp->transaction_id){
                 this->connected = 1;
                 
+                memcpy(this->connection_id, &resp->connection_id, sizeof(uint32_t));
+                check_mem(this->connection_id);
+
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+                debug("* received connection_id from tracker :: %zu", this->connection_id);
 
                 free(out);
                 return EXIT_SUCCESS;
@@ -164,6 +174,36 @@ int Tracker_connect(Tracker *this)
 
 error: 
     fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+    return EXIT_FAILURE;
+}
+
+/**
+* int Tracker_announce(Tracker *this)
+*
+* Tracker    *this; instance to initialize
+* 
+* PURPOSE : send a connect request to the tracker, check if online
+* RETURN  : success bool
+* NOTES   : fails without throwing an error. the torrent which is
+*           spawning will determine if all of the trackers have failed
+*           and will throw and error if needed.
+*/
+int Tracker_announce(Tracker *this)
+{
+    log_confirm("sending announce request :: %s:%s", this->url, this->port);
+
+    this->generate_transID(this);
+
+    /* set up the packet to send to server */
+    uint32_t transID = *this->last_transaction_id;
+    struct tracker_announce_request conn_request;
+    conn_request.connection_id = htonll(this->connection_id); /* identifies protocol - don't change */
+    conn_request.action = htonl(1);
+    conn_request.transaction_id = transID; 
+
+    return EXIT_SUCCESS;
+
+error:
     return EXIT_FAILURE;
 }
 
