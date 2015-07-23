@@ -30,7 +30,7 @@ uint32_t nrand32(int n) {
 
 int8_t nrand8_t(int n) {
   int8_t v = 0;
-  static unsigned pos[8] = { 0,  1,  2,  3,  4,  5,  6,  7 };
+  static signed pos[8] = { 0,  1,  2,  3,  4,  5,  6,  7 };
   shuffle(pos, 8);
   while (n--) v |= (1 << pos[n]);
   return v;
