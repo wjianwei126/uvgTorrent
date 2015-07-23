@@ -209,8 +209,8 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
     // convert 50 character info_hash stringlocated in magnet_uri to 20 byte array
     string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 20); // this may be problematic. need to verify that tracker is receiving the correct value here
-    
-    
+
+    // generate peer id
 
     info_hash_list->destroy(info_hash_list);
     fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
