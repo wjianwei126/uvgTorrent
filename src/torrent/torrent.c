@@ -275,7 +275,7 @@ int Torrent_announce(Torrent *this)
     Linkednode * curr = this->trackers->head;
     while(curr){
         Tracker * tracker = (Tracker *)curr->get(curr);
-        int status = tracker->announce(tracker);
+        int status = tracker->announce(tracker, this);
         success |= status;
         curr = curr->next;
     }

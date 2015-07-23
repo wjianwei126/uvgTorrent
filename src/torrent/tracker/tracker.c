@@ -18,6 +18,7 @@
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/tracker/tracker.h"
 #include "torrent/tracker/tracker_packets.h"
+#include "torrent/torrent.h"
 
 Tracker *Tracker_new(size_t size, char *address)
 {
@@ -156,7 +157,7 @@ int Tracker_connect(Tracker *this)
                 check_mem(this->connection_id);
 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-                debug("* received connection_id from tracker :: %zu", this->connection_id);
+                debug("* received connection_id from tracker :: %lu", (unsigned long)this->connection_id);
 
                 free(out);
                 return EXIT_SUCCESS;
@@ -186,8 +187,12 @@ error:
 * RETURN  : success bool
 * NOTES   : fails without throwing an error.
 */
-int Tracker_announce(Tracker *this)
+int Tracker_announce(Tracker *this, Torrent *torrent)
 {
+    if(this->connected == 0){
+        return EXIT_SUCCESS;
+    }
+
     log_confirm("sending announce request :: %s:%s", this->url, this->port);
 
     this->generate_transID(this);
@@ -195,14 +200,24 @@ int Tracker_announce(Tracker *this)
     /* set up the packet to send to server */
     uint32_t transID = *this->last_transaction_id;
     struct tracker_announce_request conn_request;
-    conn_request.connection_id = htonll(this->connection_id); /* identifies protocol - don't change */
+    conn_request.connection_id = htonl(*this->connection_id); /* identifies protocol - don't change */
     conn_request.action = htonl(1);
     conn_request.transaction_id = transID;
     
+    /* extract info hash */
+    Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
+    const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
+    // convert 50 character info_hash stringlocated in magnet_uri to 20 byte array
+    string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 20); // this may be problematic. need to verify that tracker is receiving the correct value here
+    
+    
+
+    info_hash_list->destroy(info_hash_list);
+    fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
     return EXIT_SUCCESS;
 
-error:
-    return EXIT_FAILURE;
+//error:
+    //return EXIT_FAILURE;
 }
 
 /**

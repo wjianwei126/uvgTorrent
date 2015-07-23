@@ -4,6 +4,7 @@
 #include "macro/macro.h"
 #include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
+#include "torrent/torrent.h"
 
 typedef struct Tracker Tracker;
 struct Tracker {
@@ -12,7 +13,7 @@ struct Tracker {
     void (*destroy)(Tracker *this);
     
     int (*connect)(Tracker *this);
-    int (*announce)(Tracker *this);
+    int (*announce)(Tracker *this, Torrent *torrent);
     void (*generate_transID)(Tracker *this);
 
     char * url;
@@ -32,6 +33,6 @@ void Tracker_destroy(Tracker *this);
 void Tracker_print(Tracker *this);
 
 int Tracker_connect(Tracker *this);
-int Tracker_announce(Tracker *this);
+int Tracker_announce(Tracker *this, Torrent *torrent);
 void Tracker_generate_transID(Tracker *this);
 #endif
