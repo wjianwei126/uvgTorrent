@@ -1,14 +1,14 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-inline static int randto(int n) {
+static int randto(int n) {
   int r;
   int maxrand = (RAND_MAX / n) * n;
   do r = rand(); while (r >= maxrand);
   return r % n;
 }
 
-inline static void shuffle(unsigned *x, size_t n) {
+static void shuffle(unsigned *x, size_t n) {
   while (--n) {
     size_t j = randto(n + 1);
     unsigned tmp = x[n];

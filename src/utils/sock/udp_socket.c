@@ -102,9 +102,9 @@ void UDP_Socket_print(UDP_Socket *this)
 int UDP_Socket_connect(UDP_Socket *this)
 {
 	/* local address */
-    this->local_addr = malloc(sizeof(struct sockaddr_in)); 
-   	this->remote_addr = malloc(sizeof(struct sockaddr_in));
-   	this->sock_desc = malloc(sizeof(int*));
+    this->local_addr = (this->local_addr == NULL) ? malloc(sizeof(struct sockaddr_in)) : this->local_addr; 
+   	this->remote_addr = (this->remote_addr == NULL) ? malloc(sizeof(struct sockaddr_in)) : this->remote_addr;
+   	this->sock_desc = (this->sock_desc == 0) ? malloc(sizeof(int*)) : this->sock_desc;
 
     /* local address */
     struct sockaddr_in localaddr, remaddr;

@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <endian.h>
+#include <inttypes.h>
 #include "utils/str/string_utils.h"
 #include "utils/net/net_utils.h"
 #include "utils/rand/rand_utils.h"
@@ -56,11 +57,14 @@ error:
 */
 int Tracker_init(Tracker *this, char *address)
 {
+    this->ip = NULL;
 	this->port = NULL;
     this->tracker_socket = NULL;
     this->connection_id = 0;
     this->last_transaction_id = 0;
     this->connected = 0;
+    this->attempts = 0;
+    this->max_attempts = 5;
 
 	char * addr = string_utils.urldecode(address);
 
@@ -79,7 +83,7 @@ int Tracker_init(Tracker *this, char *address)
     this->last_transaction_id = malloc(sizeof(uint32_t));
     check_mem(this->last_transaction_id);
 
-    this->connection_id = malloc(sizeof(uint32_t));
+    this->connection_id = calloc(1,sizeof(uint64_t));
     check_mem(this->connection_id);
 
     url_port->destroy(url_port);
@@ -121,43 +125,53 @@ void Tracker_print(Tracker *this)
 */
 int Tracker_connect(Tracker *this)
 {
-    log_confirm("sending connect request :: %s:%s", this->url, this->port);
-
-    // make dns request to get tracker ip
-    this->ip = malloc(32);
-    net_utils.hostname_to_ip(this->url, this->ip);
+    if(this->attempts == 0){
+        log_confirm("sending connect request :: %s:%s", this->url, this->port);
+    }
+    
+    if(this->ip == NULL){
+        // make dns request to get tracker ip
+        this->ip = malloc(32);
+        check_mem(this->ip);
+        net_utils.hostname_to_ip(this->url, this->ip);
+    }
 
     this->generate_transID(this);
 
     /* set up the packet to send to server */
     uint32_t transID = *this->last_transaction_id;
+    if(transID == -1){
+        throw("bad transID");
+    }
     struct tracker_connect_request conn_request;
     conn_request.connection_id = htonll(0x41727101980); /* identifies protocol - don't change */
     conn_request.action = htonl(0);
     conn_request.transaction_id = transID; 
     
-    /* set up our tracker socket connection */
-    this->tracker_socket = NEW(UDP_Socket, this->ip, atoi(this->port));
-    check_mem(this->tracker_socket);
+    if(this->tracker_socket == NULL) {
+        /* set up our tracker socket connection */
+        this->tracker_socket = NEW(UDP_Socket, this->ip, atoi(this->port));
+        check_mem(this->tracker_socket);
+    }
 
     int result = this->tracker_socket->connect(this->tracker_socket);
     if(result == EXIT_SUCCESS){
         // send packet
-        this->tracker_socket->send(this->tracker_socket, &conn_request, 16);
+        this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(struct tracker_connect_request));
 
         void * out = malloc(2048);
         int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
         if(conn_result == EXIT_SUCCESS){
-            this->connected = 1;
             struct tracker_connect_response * resp = out;
             if(resp->action == 0 && *this->last_transaction_id == resp->transaction_id){
                 this->connected = 1;
-                
+                this->attempts = 0;
+                    
                 memcpy(this->connection_id, &resp->connection_id, sizeof(uint32_t));
                 check_mem(this->connection_id);
 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-                debug("* received connection_id from tracker :: %lu", (unsigned long)this->connection_id);
+                debug("received connection_id from tracker :: %d", this->connection_id);
 
                 free(out);
                 return EXIT_SUCCESS;
@@ -167,14 +181,23 @@ int Tracker_connect(Tracker *this)
             }
         } else {
             free(out);
+            if(this->attempts < this->max_attempts){
+                this->attempts++;
+                this->connect(this);
+            }
             goto error;
         }
     } else {
         throw("failed to connect to tracker");
     }
 
-error: 
-    fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+    return EXIT_SUCCESS;
+
+error:
+    if(this->attempts != 0){
+        this->attempts = 0;
+        fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+    }
     return EXIT_FAILURE;
 }
 
@@ -193,31 +216,91 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
         return EXIT_SUCCESS;
     }
 
-    log_confirm("sending announce request :: %s:%s", this->url, this->port);
+    if(this->attempts == 0){
+        log_confirm("sending announce request :: %s:%s", this->url, this->port);
+    }
 
     this->generate_transID(this);
 
     /* set up the packet to send to server */
     uint32_t transID = *this->last_transaction_id;
+    
     struct tracker_announce_request conn_request;
-    conn_request.connection_id = htonl(*this->connection_id); /* identifies protocol - don't change */
+    conn_request.connection_id = htonll(*this->connection_id); /* identifies protocol - don't change */
     conn_request.action = htonl(1);
     conn_request.transaction_id = transID;
-    
+
     /* extract info hash */
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
     // convert 50 character info_hash stringlocated in magnet_uri to 20 byte array
-    string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 20); // this may be problematic. need to verify that tracker is receiving the correct value here
-
+    //string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 19); // need to verify that tracker is receiving the correct value here
+    //printf("%s",  conn_request.info_hash);
+    for(int i = 0; i < strlen(info_hash); i++){
+        conn_request.info_hash[i] = htonl((int8_t)info_hash[i]);
+    }
+    printf("%s", conn_request.info_hash);
     // generate peer id
+    for(int i = 0; i<=19; i++){
+        conn_request.peer_id[i] = htonl(rand_utils.nrand8_t(rand() % 10));
+    }
+    printf("%s", conn_request.info_hash);
+    
+    conn_request.downloaded = htonll((uint64_t)0);
+    conn_request.left = htonll((uint64_t)0);
+    conn_request.uploaded = htonll((uint64_t)0);
+    conn_request.event = htonl(0);
+    conn_request.ip = htonl(0);
+    conn_request.key = htonl(rand_utils.nrand32(rand() % 10));
+    conn_request.num_want = htonl(-1);
+    conn_request.port = htonl(5050);
+    conn_request.extensions = htonl(0);
+    // send packet
+    this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(struct tracker_announce_request));
+
+    void * out = malloc(2048);
+    check_mem(out);
+    int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
+    if(conn_result == EXIT_SUCCESS){
+        struct tracker_error * resp = out;
+        if(resp->action == 3 && *this->last_transaction_id == resp->transaction_id){
+            struct tracker_announce_response * succ = out;
+            
+            this->attempts = 0;
+            info_hash_list->destroy(info_hash_list);
+            fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+
+            debug("action :: %" PRId32, succ->action);
+            debug("transaction_id :: %" PRId32, succ->transaction_id);
+            debug("interval :: %d", (signed char)succ->interval);
+            debug("leechers :: %d", (signed char)succ->leechers);
+            debug("seeders :: %d", (signed char)succ->seeders);
+
+            free(out);
+            return EXIT_SUCCESS;
+        } else {
+            fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+            fprintf(stderr, KRED "[ERROR] %s\n" KNRM, ((strlen((char *)resp->error_string) != 0) ? (char *)resp->error_string : "no error given by tracker"));
+            free(out);
+            goto error;
+        }
+    } else {
+        if(this->attempts < this->max_attempts){
+            this->attempts++;
+            this->announce(this, torrent);
+        }
+    }
 
     info_hash_list->destroy(info_hash_list);
-    fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+    free(out);
     return EXIT_SUCCESS;
-
-//error:
-    //return EXIT_FAILURE;
+error:
+    if(this->attempts != 0){
+        this->attempts = 0;
+        fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+    }
+    if(info_hash_list != NULL) { info_hash_list->destroy(info_hash_list); };
+    return EXIT_FAILURE;
 }
 
 /**
@@ -231,6 +314,8 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 */
 void Tracker_generate_transID(Tracker *this)
 {
-    uint32_t id = htonl(rand_utils.nrand32(100));
+    int seed = rand() % 10;
+
+    uint32_t id = rand_utils.nrand32(seed);
     memcpy(this->last_transaction_id, &id, sizeof(uint32_t));
 }
