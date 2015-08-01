@@ -9,16 +9,16 @@
 struct __attribute__ ((__packed__)) tracker_connect_request 
 {
 
-	uint64_t connection_id;		/* connection id verified by tracker */
-	uint32_t action; 			/* always 0 */
-	uint32_t transaction_id;	/* randomly generated transaction id */
+	int64_t connection_id;		/* connection id verified by tracker */
+	int32_t action; 			/* always 0 */
+	int32_t transaction_id;	/* randomly generated transaction id */
 };
 
 struct __attribute__ ((__packed__)) tracker_connect_response
 {
-	uint32_t action; 			/* 0 == SUCCESS, 3 == ERROR */
-	uint32_t transaction_id;	/* should match value sent with request */
-	uint64_t connection_id;		/* connection id verified by tracker */
+	int32_t action; 			/* 0 == SUCCESS, 3 == ERROR */
+	int32_t transaction_id;	/* should match value sent with request */
+	int64_t connection_id;		/* connection id verified by tracker */
 };
 
 struct __attribute__ ((__packed__)) tracker_announce_request

@@ -6,12 +6,12 @@
 #include <stdio.h>
 #include <string.h>
 
-uint32_t nrand32(int n);
+int32_t nrand32(int n);
 int8_t nrand8_t(int n);
 
 static const struct
 {
-    uint32_t (*nrand32) (int n);
+    int32_t (*nrand32) (int n);
 	int8_t (*nrand8_t) (int n);
 } rand_utils = {
     nrand32,

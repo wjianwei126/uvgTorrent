@@ -22,8 +22,8 @@ struct Tracker {
     int connected;
     int attempts;
     int max_attempts;
-    uint64_t * connection_id;
-    uint32_t * last_transaction_id;
+    int64_t * connection_id;
+    int32_t * last_transaction_id;
     int seeders;
     int leechers;
     int interval;

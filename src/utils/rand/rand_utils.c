@@ -8,15 +8,6 @@ static int randto(int n) {
   return r % n;
 }
 
-static void shuffle(unsigned *x, size_t n) {
-  while (--n) {
-    size_t j = randto(n + 1);
-    unsigned tmp = x[n];
-    x[n] = x[j];
-    x[j] = tmp;
-  }
-}
-
 inline static void shuffle_signed(signed *x, size_t n) {
   while (--n) {
     size_t j = randto(n + 1);
@@ -26,14 +17,14 @@ inline static void shuffle_signed(signed *x, size_t n) {
   }
 }
 
-uint32_t nrand32(int n) {
-  uint32_t v = 0;
-  static unsigned pos[32] = { 0,  1,  2,  3,  4,  5,  6,  7,
+int32_t nrand32(int n) {
+  int32_t v = 0;
+  static signed pos[32] = { 0,  1,  2,  3,  4,  5,  6,  7,
                               8,  9, 10, 11, 12, 13, 14, 15,
                              16, 17, 18, 19, 20, 21, 22, 23,
                              24, 25, 26, 27, 28, 29, 30, 31};
-  shuffle(pos, 32);
-  while (n--) v |= (1U << pos[n]);
+  shuffle_signed(pos, 32);
+  while (n--) v |= (1 << pos[n]);
   return v;
 }
 
