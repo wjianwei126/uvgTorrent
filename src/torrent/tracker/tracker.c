@@ -171,6 +171,7 @@ int Tracker_connect(Tracker *this)
                 check_mem(this->connection_id);
 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+                debug("received connection_id from tracker :: %" PRId64, *this->connection_id);
                 debug("received connection_id from tracker :: %" PRId64, resp->connection_id);
 
                 free(out);
@@ -233,9 +234,12 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     /* extract info hash */
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
-    // convert 40 character info_hash stringlocated in magnet_uri to 20 byte array
-    string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 40); // need to verify that tracker is receiving the correct value here
     
+    int8_t info_hash_bytes[20];
+    // convert 40 character info_hash stringlocated in magnet_uri to 20 byte array
+    string_utils.hex_to_int8_t(info_hash, info_hash_bytes, 40); // need to verify that tracker is receiving the correct value here
+    memcpy(&conn_request.info_hash, info_hash_bytes, 20);
+
     // generate peer id
     for(int i = 0; i<=19; i++){
         conn_request.peer_id[i] = rand_utils.nrand8_t(rand() % 10);

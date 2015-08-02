@@ -101,7 +101,7 @@ char * string_urlencode(char * input)
   return buf;
 }
 
-int8_t hex_to_int8_t(const char * str, int8_t * bytes, size_t blen)
+int8_t hex_to_int8_t(const char * str, int8_t bytes[20], size_t blen)
 {
    int8_t  pos;
    int8_t  idx0;
@@ -151,6 +151,5 @@ int8_t hex_to_int8_t(const char * str, int8_t * bytes, size_t blen)
       idx1 = (int8_t)str[pos+1];
       bytes[pos/2] = (int8_t)(hashmap[idx0] << 4) | hashmap[idx1];
    };
-
    return(0);
 }
