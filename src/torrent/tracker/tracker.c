@@ -227,7 +227,8 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     int32_t transID = *this->last_transaction_id;
     
     struct tracker_announce_request conn_request;
-    conn_request.connection_id = *this->connection_id; /* identifies protocol - don't change */
+    
+    memcpy(&conn_request.connection_id, this->connection_id, sizeof(int64_t));
     conn_request.action = htonl(1);
     conn_request.transaction_id = transID;
 
