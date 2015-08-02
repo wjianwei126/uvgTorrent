@@ -171,8 +171,7 @@ int Tracker_connect(Tracker *this)
                 check_mem(this->connection_id);
 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-                debug("received connection_id from tracker :: %d", resp->connection_id);
-                debug("received connection_id from tracker :: %d", *this->connection_id);
+                debug("received connection_id from tracker :: %" PRId64, resp->connection_id);
 
                 free(out);
                 return EXIT_SUCCESS;
@@ -224,22 +223,19 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     this->generate_transID(this);
 
     /* set up the packet to send to server */
-    uint32_t transID = *this->last_transaction_id;
+    int32_t transID = *this->last_transaction_id;
     
     struct tracker_announce_request conn_request;
-    conn_request.connection_id = htonll(*this->connection_id); /* identifies protocol - don't change */
+    conn_request.connection_id = *this->connection_id; /* identifies protocol - don't change */
     conn_request.action = htonl(1);
     conn_request.transaction_id = transID;
 
     /* extract info hash */
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
-    // convert 50 character info_hash stringlocated in magnet_uri to 20 byte array
-    //string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 40); // need to verify that tracker is receiving the correct value here
-    for(int i = 0; i < strlen(info_hash); i++){
-        conn_request.info_hash[i] = htonl((int8_t)info_hash[i]);
-    }
-    printf("%s", conn_request.info_hash);
+    // convert 40 character info_hash stringlocated in magnet_uri to 20 byte array
+    string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 40); // need to verify that tracker is receiving the correct value here
+    
     // generate peer id
     for(int i = 0; i<=19; i++){
         conn_request.peer_id[i] = rand_utils.nrand8_t(rand() % 10);
@@ -248,7 +244,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     conn_request.downloaded = htonll((uint64_t)0);
     conn_request.left = htonll((uint64_t)0);
     conn_request.uploaded = htonll((uint64_t)0);
-    conn_request.event = 2;
+    conn_request.event = htonl(0);
     conn_request.ip = htonl(0);
     conn_request.key = htonl(rand_utils.nrand32(rand() % 10));
     conn_request.num_want = htonl(-1);
