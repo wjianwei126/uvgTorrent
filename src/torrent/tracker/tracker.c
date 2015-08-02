@@ -224,10 +224,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     this->generate_transID(this);
 
     /* set up the packet to send to server */
-    int32_t transID = *this->last_transaction_id;
+    uint32_t transID = *this->last_transaction_id;
     
     struct tracker_announce_request conn_request;
-    conn_request.connection_id = *this->connection_id; /* identifies protocol - don't change */
+    conn_request.connection_id = htonll(*this->connection_id); /* identifies protocol - don't change */
     conn_request.action = htonl(1);
     conn_request.transaction_id = transID;
 
@@ -235,8 +235,11 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
     // convert 50 character info_hash stringlocated in magnet_uri to 20 byte array
-    string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 40); // need to verify that tracker is receiving the correct value here
-
+    //string_utils.hex_to_int8_t(info_hash, conn_request.info_hash, 40); // need to verify that tracker is receiving the correct value here
+    for(int i = 0; i < strlen(info_hash); i++){
+        conn_request.info_hash[i] = htonl((int8_t)info_hash[i]);
+    }
+    printf("%s", conn_request.info_hash);
     // generate peer id
     for(int i = 0; i<=19; i++){
         conn_request.peer_id[i] = rand_utils.nrand8_t(rand() % 10);
@@ -260,10 +263,6 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     if(conn_result == EXIT_SUCCESS){
         struct tracker_error * resp = out;
 
-        debug("action :: %" PRId32, resp->action);
-        debug("transid1 :: %" PRId32, resp->transaction_id);
-        debug("transid2 :: %" PRId32, *this->last_transaction_id);
-
         if(resp->action == 1 && *this->last_transaction_id == resp->transaction_id){
             struct tracker_announce_response * succ = out;
             
@@ -280,6 +279,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             free(out);
             return EXIT_SUCCESS;
         } else {
+            debug("action :: %" PRId32, resp->action);
+            debug("transid1 :: %" PRId32, resp->transaction_id);
+            debug("transid2 :: %" PRId32, *this->last_transaction_id);
+
             fprintf(stderr, " %s✘%s\n", KRED, KNRM);
             fprintf(stderr, KRED "[ERROR] %s\n" KNRM, ((strlen((char *)resp->error_string) != 0) ? (char *)resp->error_string : "no error given by tracker"));
             free(out);
