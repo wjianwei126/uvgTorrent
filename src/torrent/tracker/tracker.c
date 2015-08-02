@@ -167,11 +167,12 @@ int Tracker_connect(Tracker *this)
                 this->connected = 1;
                 this->attempts = 0;
                     
-                memcpy(this->connection_id, &resp->connection_id, sizeof(uint32_t));
+                memcpy(this->connection_id, &resp->connection_id, sizeof(int64_t));
                 check_mem(this->connection_id);
 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-                debug("received connection_id from tracker :: %d", this->connection_id);
+                debug("received connection_id from tracker :: %d", resp->connection_id);
+                debug("received connection_id from tracker :: %d", *this->connection_id);
 
                 free(out);
                 return EXIT_SUCCESS;
@@ -226,7 +227,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     int32_t transID = *this->last_transaction_id;
     
     struct tracker_announce_request conn_request;
-    conn_request.connection_id = htonll(*this->connection_id); /* identifies protocol - don't change */
+    conn_request.connection_id = *this->connection_id; /* identifies protocol - don't change */
     conn_request.action = htonl(1);
     conn_request.transaction_id = transID;
 
@@ -238,13 +239,13 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 
     // generate peer id
     for(int i = 0; i<=19; i++){
-        conn_request.peer_id[i] = htonl(rand_utils.nrand8_t(rand() % 10));
+        conn_request.peer_id[i] = rand_utils.nrand8_t(rand() % 10);
     }
     
     conn_request.downloaded = htonll((uint64_t)0);
     conn_request.left = htonll((uint64_t)0);
     conn_request.uploaded = htonll((uint64_t)0);
-    conn_request.event = htonl(0);
+    conn_request.event = 2;
     conn_request.ip = htonl(0);
     conn_request.key = htonl(rand_utils.nrand32(rand() % 10));
     conn_request.num_want = htonl(-1);
@@ -258,6 +259,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
     if(conn_result == EXIT_SUCCESS){
         struct tracker_error * resp = out;
+
+        debug("action :: %" PRId32, resp->action);
+        debug("transid1 :: %" PRId32, resp->transaction_id);
+        debug("transid2 :: %" PRId32, *this->last_transaction_id);
 
         if(resp->action == 1 && *this->last_transaction_id == resp->transaction_id){
             struct tracker_announce_response * succ = out;
