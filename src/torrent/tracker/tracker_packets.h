@@ -53,6 +53,8 @@ static const struct
 void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id, char result[98]){
 	size_t length = 98;
 
+	debug("connection_id %" PRId64, connection_id);
+
 	int32_t action = htonl(1);
 	int64_t downloaded = hton64(0);
     int64_t left = hton64(0);
@@ -65,8 +67,11 @@ void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction
     uint16_t extensions = htons(0);
 	
 	size_t pos = 0;
-	memcpy(&result[pos], &connection_id, sizeof(int64_t));
+	memcpy(&result[pos], &connection_id, 8);
 	pos += sizeof(int64_t);
+
+	debug("connection_id_packet %" PRId64, result[0]);
+	debug("connection_id_packet %" PRId64, connection_id);
 
 	memcpy(&result[pos], &action, sizeof(int32_t));
 	pos += sizeof(int32_t);
