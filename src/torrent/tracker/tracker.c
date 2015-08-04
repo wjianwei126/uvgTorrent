@@ -170,11 +170,10 @@ int Tracker_connect(Tracker *this)
             if(action == 0 && *this->last_transaction_id == transaction_id){
                 this->connected = 1;
                 this->attempts = 0;
-                int64_t con = out[8];
-                memcpy(&connection_id, &con, sizeof(int64_t));
-                //connection_id = ntoh64(connection_id);
+                memcpy(&connection_id, &out[8], sizeof(int64_t));
+                connection_id = ntoh64(connection_id);
                 memcpy(&this->connection_id, &connection_id, sizeof(int64_t));
-                debug("%" PRId64, this->connection_id);
+                debug("connection_id %" PRId64, this->connection_id);
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
                 
                 return EXIT_SUCCESS;
