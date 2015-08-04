@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <netinet/in.h>
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/linkedlist/linkedlist.h"
 
@@ -149,7 +150,7 @@ int8_t hex_to_int8_t(const char * str, int8_t bytes[20], size_t blen)
    {
       idx0 = (int8_t)str[pos+0];
       idx1 = (int8_t)str[pos+1];
-      bytes[pos/2] = (int8_t)(hashmap[idx0] << 4) | hashmap[idx1];
+      bytes[pos/2] = htons((int8_t)(hashmap[idx0] << 4) | hashmap[idx1]);
    };
    return(0);
 }

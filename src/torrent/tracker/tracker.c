@@ -83,8 +83,8 @@ int Tracker_init(Tracker *this, char *address)
     this->last_transaction_id = malloc(sizeof(int32_t));
     check_mem(this->last_transaction_id);
 
-    this->connection_id = calloc(1,sizeof(int64_t));
-    check_mem(this->connection_id);
+    this->connection_id = 0;//calloc(1,sizeof(int64_t));
+    //check_mem(this->connection_id);
 
     url_port->destroy(url_port);
     free(addr);
@@ -101,7 +101,7 @@ void Tracker_destroy(Tracker *this)
 		if(this->url) { free(this->url); }
         if(this->ip) { free(this->ip); }
         if(this->last_transaction_id) { free(this->last_transaction_id); }
-        if(this->connection_id) { free(this->connection_id); }
+        //if(this->connection_id) { free(this->connection_id); }
         if(this->tracker_socket){ this->tracker_socket->destroy(this->tracker_socket); }
 		free(this);
 	}
@@ -139,14 +139,12 @@ int Tracker_connect(Tracker *this)
     this->generate_transID(this);
 
     /* set up the packet to send to server */
-    uint32_t transID = *this->last_transaction_id;
+    int32_t transID = *this->last_transaction_id;
     if(transID == -1){
         throw("bad transID");
     }
-    struct tracker_connect_request conn_request;
-    conn_request.connection_id = htonll(0x41727101980); /* identifies protocol - don't change */
-    conn_request.action = htonl(0);
-    conn_request.transaction_id = transID; 
+    char conn_request[16];
+    tracker_connect_request.prepare(transID, conn_request);
     
     if(this->tracker_socket == NULL) {
         /* set up our tracker socket connection */
@@ -157,31 +155,33 @@ int Tracker_connect(Tracker *this)
     int result = this->tracker_socket->connect(this->tracker_socket);
     if(result == EXIT_SUCCESS){
         // send packet
-        this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(struct tracker_connect_request));
+        this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
 
-        void * out = malloc(2048);
+        signed char out[2048];
         int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
         if(conn_result == EXIT_SUCCESS){
-            struct tracker_connect_response * resp = out;
-            if(resp->action == 0 && *this->last_transaction_id == resp->transaction_id){
+            int32_t action;
+            int32_t transaction_id;
+            int64_t connection_id;
+
+            memcpy(&action, &out[0], sizeof(int32_t));
+            memcpy(&transaction_id, &out[4], sizeof(int32_t));
+
+            if(action == 0 && *this->last_transaction_id == transaction_id){
                 this->connected = 1;
                 this->attempts = 0;
-                    
-                memcpy(this->connection_id, &resp->connection_id, sizeof(int64_t));
-                check_mem(this->connection_id);
-
+                int64_t con = out[8];
+                memcpy(&connection_id, &con, sizeof(int64_t));
+                //connection_id = ntoh64(connection_id);
+                memcpy(&this->connection_id, &connection_id, sizeof(int64_t));
+                debug("%" PRId64, this->connection_id);
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-                debug("received connection_id from tracker :: %" PRId64, *this->connection_id);
-                debug("received connection_id from tracker :: %" PRId64, resp->connection_id);
-
-                free(out);
+                
                 return EXIT_SUCCESS;
             } else {
-                free(out);
                 goto error;
             }
         } else {
-            free(out);
             if(this->attempts < this->max_attempts){
                 this->attempts++;
                 this->connect(this);
@@ -225,38 +225,19 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 
     /* set up the packet to send to server */
     int32_t transID = *this->last_transaction_id;
-    
-    struct tracker_announce_request conn_request;
-    
-    memcpy(&conn_request.connection_id, this->connection_id, sizeof(int64_t));
-    conn_request.action = htonl(1);
-    conn_request.transaction_id = transID;
-
     /* extract info hash */
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
-    
     int8_t info_hash_bytes[20];
     // convert 40 character info_hash stringlocated in magnet_uri to 20 byte array
-    string_utils.hex_to_int8_t(info_hash, info_hash_bytes, 40); // need to verify that tracker is receiving the correct value here
-    memcpy(&conn_request.info_hash, info_hash_bytes, 20);
+    string_utils.hex_to_int8_t(info_hash, info_hash_bytes, 40);
+    char * peer_id = "UVG01234567891234567";
 
-    // generate peer id
-    for(int i = 0; i<=19; i++){
-        conn_request.peer_id[i] = rand_utils.nrand8_t(rand() % 10);
-    }
+    char conn_request[98];
+    tracker_announce_request.prepare(this->connection_id, transID, info_hash_bytes, peer_id, conn_request);
     
-    conn_request.downloaded = htonll((uint64_t)0);
-    conn_request.left = htonll((uint64_t)0);
-    conn_request.uploaded = htonll((uint64_t)0);
-    conn_request.event = htonl(0);
-    conn_request.ip = htonl(0);
-    conn_request.key = htonl(rand_utils.nrand32(rand() % 10));
-    conn_request.num_want = htonl(-1);
-    conn_request.port = htonl(5050);
-    conn_request.extensions = htonl(0);
     // send packet
-    this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(struct tracker_announce_request));
+    this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
 
     void * out = malloc(2048);
     check_mem(out);

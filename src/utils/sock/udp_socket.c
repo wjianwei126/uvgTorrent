@@ -170,20 +170,19 @@ error:
 * PURPOSE : copy socket response into output
 * RETURN  : success bool
 */
-int UDP_Socket_receive(UDP_Socket *this, void * output)
+int UDP_Socket_receive(UDP_Socket *this, signed char buffer[2048])
 {
     int fd = *this->sock_desc;
     struct sockaddr_storage src_addr;
 
-    char buffer[2048];
     socklen_t src_addr_len=sizeof(src_addr);
-    ssize_t count=recvfrom(fd,buffer,sizeof(buffer),0,(struct sockaddr*)&src_addr,&src_addr_len);
-    if (count==sizeof(buffer)) {
+    ssize_t count=recvfrom(fd,buffer,2048,0,(struct sockaddr*)&src_addr,&src_addr_len);
+    if (count==2048) {
         log_warn("datagram too large for buffer: truncated");
     } else {
         if (count != -1) {
-            memcpy(output, buffer, count);
-            check_mem(output);
+            //memcpy(output, buffer, count);
+            //check_mem(output);
         } else {
             return EXIT_FAILURE;
         }
