@@ -23,7 +23,7 @@ struct Tracker {
     int attempts;
     int max_attempts;
     int64_t connection_id;
-    int32_t * last_transaction_id;
+    int32_t last_transaction_id;
     int seeders;
     int leechers;
     int interval;

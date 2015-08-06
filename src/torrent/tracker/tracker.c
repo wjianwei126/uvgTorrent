@@ -131,7 +131,7 @@ int Tracker_connect(Tracker *this)
 
     /* set up the packet to send to server */
     this->generate_transID(this);
-    assert(this->last_transaction_id == -1, "bad transID")
+    //assert(this->last_transaction_id == -1, "bad transID");
 
     char conn_request[16];
     tracker_connect_request.prepare(this->last_transaction_id, conn_request);
@@ -215,8 +215,6 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 
     this->generate_transID(this);
 
-    /* set up the packet to send to server */
-    int32_t transID = this->last_transaction_id;
     /* extract info hash */
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
@@ -233,7 +231,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 
     /* prepare the announce request packet */
     char conn_request[100];
-    tracker_announce_request.prepare(this->connection_id, transID, info_hash_bytes, peer_id, conn_request);
+    tracker_announce_request.prepare(this->connection_id, this->last_transaction_id, info_hash_bytes, peer_id, conn_request);
     
     // send packet
     this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
@@ -303,8 +301,8 @@ error:
 */
 void Tracker_generate_transID(Tracker *this)
 {
-    int seed = rand() % 10;
-
-    int32_t id = htonl(rand_utils.nrand32(seed));
+    int seed = rand() % 100;
+    int32_t id = rand_utils.nrand32(seed);
+    
     memcpy(&this->last_transaction_id, &id, sizeof(int32_t));
 }
