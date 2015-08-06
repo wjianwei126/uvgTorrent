@@ -126,11 +126,11 @@ struct __attribute__ ((__packed__)) tracker_announce_response
 	int32_t 	interval; 		/* number of seconds to wait before reannouncing */
 	int32_t 	leechers;		/* number of leechers */
 	int32_t 	seeders;		/* number of seeders */
-
+	int32_t 	ip;
+	uint16_t 	port;
 	/**
 	* The rest of the server reply is a variable number of the following structure:
-	* int32_t 	ip 	
-	* uint16_t 	port
+	* 
 	*/
 };
 

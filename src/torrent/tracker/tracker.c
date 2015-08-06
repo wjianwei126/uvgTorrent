@@ -245,9 +245,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
         if(resp->action == 1 && this->last_transaction_id == resp->transaction_id){
             struct tracker_announce_response * succ = out;
             
-            succ->interval = ntohl(succ->interval);
-            succ->leechers = ntohl(succ->leechers);
-            succ->seeders = ntohl(succ->seeders);
+            succ->interval = net_utils.ntohl(succ->interval);
+            succ->leechers = net_utils.ntohl(succ->leechers);
+            succ->seeders = net_utils.ntohl(succ->seeders);
+            succ->port = net_utils.ntohs(succ->port);
 
             this->attempts = 0;
             info_hash_list->destroy(info_hash_list);
@@ -257,7 +258,11 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             debug("transaction_id :: %" PRId32, succ->transaction_id);
             debug("interval :: %" PRId32, succ->interval);
             debug("leechers :: %" PRId32, succ->leechers);
-            debug("seeders :: %" PRId32, succ->seeders);
+            
+            // loop through peers until end of response from tracker
+            struct in_addr * peer_ip = (struct in_addr *) &succ->ip;
+            char * ip = inet_ntoa(*peer_ip);
+            debug("peer :: %s:%" PRId16, ip, succ->port);
 
             free(out);
             return EXIT_SUCCESS;
