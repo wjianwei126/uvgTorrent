@@ -230,6 +230,11 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     int8_t info_hash_bytes[20];
     // convert 40 character info_hash stringlocated in magnet_uri to 20 byte array
     string_utils.hex_to_int8_t(info_hash, info_hash_bytes, 40);
+
+    //for(int i = 0; i < 20; i++){
+    //    info_hash_bytes[i] = htons(info_hash_bytes[i]);
+    //}
+
     char * peer_id = "UVG01234567891234567";
 
     char conn_request[98];
