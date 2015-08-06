@@ -173,8 +173,9 @@ int Tracker_connect(Tracker *this)
                 memcpy(&connection_id, &out[8], sizeof(int64_t));
                 connection_id = ntoh64(connection_id);
                 memcpy(&this->connection_id, &connection_id, sizeof(int64_t));
-                debug("connection_id %" PRId64, this->connection_id);
+                
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+                debug("received connection_id %" PRId64, this->connection_id);
                 
                 return EXIT_SUCCESS;
             } else {
@@ -227,17 +228,19 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     /* extract info hash */
     Linkedlist * info_hash_list = string_utils.split(torrent->hash, ':');
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
+    
     int8_t info_hash_bytes[20];
-    // convert 40 character info_hash stringlocated in magnet_uri to 20 byte array
-    string_utils.hex_to_int8_t(info_hash, info_hash_bytes, 40);
+    /* hex string to int8_t array */
+    for(int count = 0; count < sizeof(info_hash_bytes)/sizeof(info_hash_bytes[0]); count++) {
+        sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
+        info_hash += 2 * sizeof(char);
+    }
 
-    //for(int i = 0; i < 20; i++){
-    //    info_hash_bytes[i] = htons(info_hash_bytes[i]);
-    //}
-
+    /* hardcoded peer_id -> replace with random val */
     char * peer_id = "UVG01234567891234567";
 
-    char conn_request[98];
+    /* prepare the announce request packet */
+    char conn_request[100];
     tracker_announce_request.prepare(this->connection_id, transID, info_hash_bytes, peer_id, conn_request);
     
     // send packet

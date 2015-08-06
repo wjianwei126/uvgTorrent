@@ -50,10 +50,8 @@ static const struct
 	prepare_tracker_connect_request
 };
 
-void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id, char result[98]){
-	size_t length = 98;
-
-	debug("connection_id %" PRId64, connection_id);
+void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id, char result[100]){
+	size_t length = 100;
 
 	int32_t action = htonl(1);
 	int64_t downloaded = hton64(0);
@@ -109,8 +107,8 @@ void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction
 	memcpy(&result[pos], &port, sizeof(uint16_t));
 	pos += sizeof(uint16_t);
 	
-	//memcpy(&result[pos], &extensions, sizeof(uint16_t));
-	//pos += sizeof(uint16_t);
+	memcpy(&result[pos], &extensions, sizeof(uint16_t));
+	pos += sizeof(uint16_t);
 
 	//assert(pos == length, "packet size error"); // assert that data fit into expected packet size
 
