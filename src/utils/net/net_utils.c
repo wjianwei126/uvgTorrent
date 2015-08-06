@@ -14,12 +14,13 @@
 int little_endianess ()
 {
     /*
-    *  if the first bit in memory is 0x01
+    *  if the first bit in memory is 0x67 (last bit in the word)
     *  then we're on a little endian system, and
-    *  we'll need to flip bits for network requests */
-
+    *  we'll need to flip bits for network requests 
+    *  https://en.wikipedia.org/wiki/Endianness#Example 
+    */
     volatile uint32_t i = 0x01234567;
-    return (*(uint8_t*)&i) == 0x01;
+    return (*((uint8_t*)(&i))) == 0x67;
 }
 
 /**

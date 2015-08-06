@@ -31,10 +31,12 @@ void prepare_tracker_connect_request(int32_t transaction_id, char result[16]){
 	memcpy(&result[pos], &transaction_id, sizeof(int32_t));
 	pos += sizeof(int32_t);
 
-	//assert(pos == length, "packet size error"); // assert that data fit into expected packet size
+	debug("%d", pos);
+	debug("%d", length);
+	assert(pos == length, "packet size error"); // assert that data fit into expected packet size
 
-//error:
-	//throw("packet size error");
+error:
+	throw("packet size error");
 }
 
 static const struct
