@@ -148,8 +148,8 @@ int Tracker_connect(Tracker *this)
         this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
 
         signed char out[2048];
-        int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
-        if(conn_result == EXIT_SUCCESS){
+        ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
+        if(packet_size != -1){
             int32_t action;
             int32_t transaction_id;
 
@@ -238,17 +238,16 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 
     void * out = malloc(2048);
     check_mem(out);
-    int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
-    if(conn_result == EXIT_SUCCESS){
+    ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
+    if(packet_size != -1){
         struct tracker_error * resp = out;
         resp->action = ntohl(resp->action);
         if(resp->action == 1 && this->last_transaction_id == resp->transaction_id){
             struct tracker_announce_response * succ = out;
             
             succ->interval = net_utils.ntohl(succ->interval);
-            succ->leechers = net_utils.ntohl(succ->leechers);
             succ->seeders = net_utils.ntohl(succ->seeders);
-            succ->port = net_utils.ntohs(succ->port);
+            succ->leechers = net_utils.ntohl(succ->leechers);
 
             this->attempts = 0;
             info_hash_list->destroy(info_hash_list);
@@ -257,12 +256,26 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             debug("action :: %" PRId32, succ->action);
             debug("transaction_id :: %" PRId32, succ->transaction_id);
             debug("interval :: %" PRId32, succ->interval);
+            debug("seeders :: %" PRId32, succ->seeders);
             debug("leechers :: %" PRId32, succ->leechers);
             
-            // loop through peers until end of response from tracker
-            struct in_addr * peer_ip = (struct in_addr *) &succ->ip;
-            char * ip = inet_ntoa(*peer_ip);
-            debug("peer :: %s:%" PRId16, ip, succ->port);
+            size_t last_peer_position = packet_size - 22;
+            size_t peer_position = 0;
+
+            while ( peer_position < last_peer_position ) {
+                // loop through peers until end of response from tracker
+                struct in_addr * peer_ip = (struct in_addr *) &succ->ip + peer_position;
+                uint16_t port = net_utils.ntohs(*(uint16_t *)&succ->ip + peer_position + sizeof(int32_t));
+                char * ip = inet_ntoa(*peer_ip);
+
+                if(strcmp(ip,"0.0.0.0") == 0){
+                    break;
+                }
+
+                debug("peer :: %s:%" PRId16, ip, port);
+                peer_position += sizeof(int32_t) + sizeof(uint16_t);
+
+            }
 
             free(out);
             return EXIT_SUCCESS;
@@ -306,8 +319,6 @@ error:
 */
 void Tracker_generate_transID(Tracker *this)
 {
-    int seed = rand() % 100;
-    int32_t id = rand_utils.nrand32(seed);
-    
+    int32_t id = (int32_t) rand() % 1000000;
     memcpy(&this->last_transaction_id, &id, sizeof(int32_t));
 }

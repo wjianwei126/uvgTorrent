@@ -11,7 +11,7 @@ struct UDP_Socket {
     
     int (*connect)(UDP_Socket *this);
     int (*send)(UDP_Socket *this, void * message, size_t message_size);
-    int (*receive)(UDP_Socket *this, signed char buffer[2048]);
+    ssize_t (*receive)(UDP_Socket *this, signed char buffer[2048]);
 
     char * ip;
     int * port;
@@ -29,6 +29,6 @@ void UDP_Socket_print(UDP_Socket *this);
 
 int UDP_Socket_connect(UDP_Socket *this);
 int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size);
-int UDP_Socket_receive(UDP_Socket *this, signed char buffer[2048]);
+ssize_t UDP_Socket_receive(UDP_Socket *this, signed char buffer[2048]);
 
 #endif

@@ -27,8 +27,7 @@ struct Tracker {
     int seeders;
     int leechers;
     int interval;
-
-
+    
     UDP_Socket * tracker_socket;
 };
 
