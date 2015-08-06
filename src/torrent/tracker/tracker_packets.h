@@ -15,7 +15,7 @@
 *
 **/
 
-void prepare_tracker_connect_request(int32_t transaction_id, char result[16]){
+int prepare_tracker_connect_request(int32_t transaction_id, char result[16]){
 	size_t length = 16;
 
 	int64_t connection_id = net_utils.htonll(0x41727101980);
@@ -31,22 +31,21 @@ void prepare_tracker_connect_request(int32_t transaction_id, char result[16]){
 	memcpy(&result[pos], &transaction_id, sizeof(int32_t));
 	pos += sizeof(int32_t);
 
-	debug("%d", pos);
-	debug("%d", length);
 	assert(pos == length, "packet size error"); // assert that data fit into expected packet size
 
+	return EXIT_SUCCESS;
 error:
-	throw("packet size error");
+	return EXIT_FAILURE;
 }
 
 static const struct
 {
-	void (*prepare)(int32_t transaction_id, char result[16]);
+	int (*prepare)(int32_t transaction_id, char result[16]);
 } tracker_connect_request = {
 	prepare_tracker_connect_request
 };
 
-void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id, char result[100]){
+int prepare_tracker_announce_request(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id, char result[100]){
 	size_t length = 100;
 
 	int32_t action = net_utils.htonl(1);
@@ -108,13 +107,14 @@ void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction
 
 	assert(pos == length, "packet size error"); // assert that data fit into expected packet size
 
+	return EXIT_SUCCESS;
 error:
-	throw("packet size error");
+	return EXIT_FAILURE;
 }
 
 static const struct
 {
-	void (*prepare)(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char * peer_id, char result[98]);
+	int (*prepare)(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char * peer_id, char result[98]);
 } tracker_announce_request = {
 	prepare_tracker_announce_request
 };

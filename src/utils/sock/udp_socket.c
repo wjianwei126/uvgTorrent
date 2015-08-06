@@ -180,18 +180,12 @@ int UDP_Socket_receive(UDP_Socket *this, signed char buffer[2048])
     if (count==2048) {
         log_warn("datagram too large for buffer: truncated");
     } else {
-        if (count != -1) {
-            //memcpy(output, buffer, count);
-            //check_mem(output);
-        } else {
+        if (count == -1) {
             return EXIT_FAILURE;
         }
     }
 
     return EXIT_SUCCESS;
-
-error:
-    return EXIT_FAILURE;
 }
 
 /**
