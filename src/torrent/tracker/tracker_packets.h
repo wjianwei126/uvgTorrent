@@ -1,4 +1,5 @@
 #include "utils/str/string_utils.h"
+#include "utils/net/net_utils.h"
 #include <endian.h>
 #include <inttypes.h>
 /**
@@ -13,19 +14,12 @@
 * These structs are used to make manipulating network data easierbut not for sending data
 *
 **/
-uint64_t byteswap64(uint64_t x) {
-  uint64_t v1 = ntohl(x & 0x00000000ffffffffllu);
-  uint64_t v2 = ntohl(x >> 32);
-  return (v1 << 32)|v2;
-}
-uint64_t ntoh64(uint64_t x) { return byteswap64(x); }
-uint64_t hton64(uint64_t x) { return byteswap64(x); }
 
 void prepare_tracker_connect_request(int32_t transaction_id, char result[16]){
 	size_t length = 16;
 
-	int64_t connection_id = htonll(0x41727101980);
-	int32_t action = htonl(0);
+	int64_t connection_id = net_utils.htonll(0x41727101980);
+	int32_t action = net_utils.htonl(0);
 
 	size_t pos = 0;
 	memcpy(&result[pos], &connection_id, sizeof(int64_t));
@@ -40,7 +34,7 @@ void prepare_tracker_connect_request(int32_t transaction_id, char result[16]){
 	//assert(pos == length, "packet size error"); // assert that data fit into expected packet size
 
 //error:
-//	throw("packet size error");
+	//throw("packet size error");
 }
 
 static const struct
@@ -53,18 +47,18 @@ static const struct
 void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id, char result[100]){
 	size_t length = 100;
 
-	int32_t action = htonl(1);
-	int64_t downloaded = hton64(0);
-    int64_t left = hton64(0);
-    int64_t uploaded = hton64(0);
-    int32_t event = htonl(0);
-    uint32_t ip = htonl(0);
-    uint32_t key = htonl(1);//rand_utils.nrand32(rand() % 10));
-    int32_t num_want = htonl(-1);
-    uint16_t port = htons(0);
-    uint16_t extensions = htons(0);
+	int32_t action = net_utils.htonl(1);
+	int64_t downloaded = net_utils.htonll(0);
+    int64_t left = net_utils.htonll(0);
+    int64_t uploaded = net_utils.htonll(0);
+    int32_t event = net_utils.htonl(0);
+    uint32_t ip = net_utils.htonl(0);
+    uint32_t key = net_utils.htonl(1);//rand_utils.nrand32(rand() % 10));
+    int32_t num_want = net_utils.htonl(-1);
+    uint16_t port = net_utils.htons(0);
+    uint16_t extensions = net_utils.htons(0);
 	
-	int64_t conn_id = hton64(connection_id);
+	int64_t conn_id = net_utils.htonll(connection_id);
 
 	size_t pos = 0;
 	memcpy(&result[pos], &conn_id, 8);
@@ -110,10 +104,10 @@ void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction
 	memcpy(&result[pos], &extensions, sizeof(uint16_t));
 	pos += sizeof(uint16_t);
 
-	//assert(pos == length, "packet size error"); // assert that data fit into expected packet size
+	assert(pos == length, "packet size error"); // assert that data fit into expected packet size
 
-//error:
-//	throw("packet size error");
+error:
+	throw("packet size error");
 }
 
 static const struct

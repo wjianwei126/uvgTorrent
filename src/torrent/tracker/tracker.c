@@ -171,7 +171,7 @@ int Tracker_connect(Tracker *this)
                 this->connected = 1;
                 this->attempts = 0;
                 memcpy(&connection_id, &out[8], sizeof(int64_t));
-                connection_id = ntoh64(connection_id);
+                connection_id = net_utils.ntohll(connection_id);
                 memcpy(&this->connection_id, &connection_id, sizeof(int64_t));
                 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
