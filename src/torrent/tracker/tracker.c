@@ -243,19 +243,23 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     int conn_result = this->tracker_socket->receive(this->tracker_socket, out);
     if(conn_result == EXIT_SUCCESS){
         struct tracker_error * resp = out;
-
+        resp->action = ntohl(resp->action);
         if(resp->action == 1 && *this->last_transaction_id == resp->transaction_id){
             struct tracker_announce_response * succ = out;
             
+            succ->interval = ntohl(succ->interval);
+            succ->leechers = ntohl(succ->leechers);
+            succ->seeders = ntohl(succ->seeders);
+
             this->attempts = 0;
             info_hash_list->destroy(info_hash_list);
             fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
             debug("action :: %" PRId32, succ->action);
             debug("transaction_id :: %" PRId32, succ->transaction_id);
-            debug("interval :: %d", (signed char)succ->interval);
-            debug("leechers :: %d", (signed char)succ->leechers);
-            debug("seeders :: %d", (signed char)succ->seeders);
+            debug("interval :: %" PRId32, succ->interval);
+            debug("leechers :: %" PRId32, succ->leechers);
+            debug("seeders :: %" PRId32, succ->seeders);
 
             free(out);
             return EXIT_SUCCESS;

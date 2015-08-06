@@ -65,12 +65,12 @@ void prepare_tracker_announce_request(int64_t connection_id, int32_t transaction
     int32_t num_want = htonl(-1);
     uint16_t port = htons(0);
     uint16_t extensions = htons(0);
-	
+	connection_id = hton64(connection_id);
 	size_t pos = 0;
 	memcpy(&result[pos], &connection_id, 8);
 	pos += sizeof(int64_t);
 
-	debug("connection_id_packet %" PRId64, result[0]);
+	debug("connection_id_packet %" PRId64, result);
 	debug("connection_id_packet %" PRId64, connection_id);
 
 	memcpy(&result[pos], &action, sizeof(int32_t));
