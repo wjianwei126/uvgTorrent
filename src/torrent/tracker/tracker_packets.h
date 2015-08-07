@@ -41,6 +41,7 @@ error:
 static const struct
 {
 	int (*prepare)(int32_t transaction_id, char result[16]);
+	int (*unpack_response)(char result[16]);
 } tracker_connect_request = {
 	prepare_tracker_connect_request
 };
