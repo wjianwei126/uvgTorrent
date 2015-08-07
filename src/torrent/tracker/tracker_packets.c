@@ -3,6 +3,7 @@
 #include "utils/str/string_utils.h"
 #include "utils/net/net_utils.h"
 #include "torrent/tracker/tracker_packets.h"
+#include "data_structures/linkedlist/linkedlist.h"
 #include <endian.h>
 #include <inttypes.h>
 #include <stdlib.h>

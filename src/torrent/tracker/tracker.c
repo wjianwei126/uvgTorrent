@@ -128,13 +128,6 @@ int Tracker_connect(Tracker *this)
     if(this->attempts == 0){
         log_confirm("sending connect request :: %s:%s", this->url, this->port);
     }
-
-    /* set up the packet to send to server */
-    this->generate_transID(this);
-    //assert(this->last_transaction_id == -1, "bad transID");
-
-    char conn_request[16];
-    tracker_connect_request.prepare_request(this->last_transaction_id, conn_request);
     
     if(this->tracker_socket == NULL) {
         /* set up our tracker socket connection */
@@ -144,6 +137,12 @@ int Tracker_connect(Tracker *this)
 
     int result = this->tracker_socket->connect(this->tracker_socket);
     if(result == EXIT_SUCCESS){
+        this->generate_transID(this);
+
+        // set up packet
+        char conn_request[16];
+        tracker_connect_request.prepare_request(this->last_transaction_id, conn_request);
+
         // send packet
         this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
 
@@ -151,7 +150,6 @@ int Tracker_connect(Tracker *this)
         ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
 
         if(packet_size != -1){
-            
             struct tracker_connect_response response = tracker_connect_request.unpack_response(out);
 
             if(response.action == 0 && this->last_transaction_id == response.transaction_id){
@@ -216,7 +214,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     
     int8_t info_hash_bytes[20];
     /* hex string to int8_t array */
-    for(int count = 0; count < sizeof(info_hash_bytes)/sizeof(info_hash_bytes[0]); count++) {
+    for(int count = 0; count < sizeof(info_hash_bytes); count++) {
         sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
         info_hash += 2 * sizeof(char);
     }
@@ -226,33 +224,26 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
 
     /* prepare the announce request packet */
     char conn_request[100];
-    tracker_announce_request.prepare(this->connection_id, this->last_transaction_id, info_hash_bytes, peer_id, conn_request);
+    tracker_announce_request.prepare_request(this->connection_id, this->last_transaction_id, info_hash_bytes, peer_id, conn_request);
     
     // send packet
     this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
 
-    void * out = malloc(2048);
-    check_mem(out);
+    char out[2048];
     ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
     if(packet_size != -1){
-        struct tracker_error * resp = out;
-        resp->action = ntohl(resp->action);
-        if(resp->action == 1 && this->last_transaction_id == resp->transaction_id){
-            struct tracker_announce_response * succ = out;
-            
-            succ->interval = net_utils.ntohl(succ->interval);
-            succ->seeders = net_utils.ntohl(succ->seeders);
-            succ->leechers = net_utils.ntohl(succ->leechers);
+        struct tracker_announce_response response = tracker_announce_request.unpack_response(out);
 
+        if(response.action == 1 && this->last_transaction_id == response.transaction_id){
             this->attempts = 0;
             info_hash_list->destroy(info_hash_list);
             fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
-            debug("action :: %" PRId32, succ->action);
-            debug("transaction_id :: %" PRId32, succ->transaction_id);
-            debug("interval :: %" PRId32, succ->interval);
-            debug("seeders :: %" PRId32, succ->seeders);
-            debug("leechers :: %" PRId32, succ->leechers);
+            debug("action :: %" PRId32, response.action);
+            debug("transaction_id :: %" PRId32, response.transaction_id);
+            debug("interval :: %" PRId32, response.interval);
+            debug("seeders :: %" PRId32, response.seeders);
+            debug("leechers :: %" PRId32, response.leechers);
             
             size_t last_peer_position = packet_size - 22;
             size_t peer_position = 0;
