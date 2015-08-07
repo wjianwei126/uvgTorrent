@@ -134,7 +134,7 @@ int Tracker_connect(Tracker *this)
     //assert(this->last_transaction_id == -1, "bad transID");
 
     char conn_request[16];
-    tracker_connect_request.prepare(this->last_transaction_id, conn_request);
+    tracker_connect_request.prepare_request(this->last_transaction_id, conn_request);
     
     if(this->tracker_socket == NULL) {
         /* set up our tracker socket connection */
@@ -147,23 +147,18 @@ int Tracker_connect(Tracker *this)
         // send packet
         this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
 
-        signed char out[2048];
+        char out[2048];
         ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
+
         if(packet_size != -1){
-            int32_t action;
-            int32_t transaction_id;
+            
+            struct tracker_connect_response response = tracker_connect_request.unpack_response(out);
 
-            memcpy(&action, &out[0], sizeof(int32_t));
-            memcpy(&transaction_id, &out[4], sizeof(int32_t));
-
-            if(action == 0 && this->last_transaction_id == transaction_id){
+            if(response.action == 0 && this->last_transaction_id == response.transaction_id){
                 this->connected = 1;
                 this->attempts = 0;
 
-                int64_t connection_id;
-                memcpy(&connection_id, &out[8], sizeof(int64_t));
-                connection_id = net_utils.ntohll(connection_id);
-                memcpy(&this->connection_id, &connection_id, sizeof(int64_t));
+                memcpy(&this->connection_id, &response.connection_id, sizeof(int64_t));
                 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
                 debug("received connection_id %" PRId64, this->connection_id);

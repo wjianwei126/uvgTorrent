@@ -170,7 +170,7 @@ error:
 * PURPOSE : copy socket response into output
 * RETURN  : success bool
 */
-ssize_t UDP_Socket_receive(UDP_Socket *this, signed char buffer[2048])
+ssize_t UDP_Socket_receive(UDP_Socket *this, char buffer[2048])
 {
     int fd = *this->sock_desc;
     struct sockaddr_storage src_addr;

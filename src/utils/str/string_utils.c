@@ -4,6 +4,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <netinet/in.h>
+#include <endian.h>
+#include <inttypes.h>
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/linkedlist/linkedlist.h"
 

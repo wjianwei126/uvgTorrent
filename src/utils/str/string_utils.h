@@ -5,6 +5,8 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <endian.h>
+#include <inttypes.h>
 #include "data_structures/linkedlist/linkedlist.h"
 
 Linkedlist * string_split (char * input, char delimeter);
