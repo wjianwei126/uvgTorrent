@@ -10,6 +10,25 @@
 * http://www.bittorrent.org/beps/bep_0020.html
 **/
 
+/* TRACKER_CONNECT_REQUEST */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* TRACKER CONNECT REQUEST */
 int prepare_tracker_connect_request(int32_t transaction_id, char result[16]);
 struct tracker_connect_response unpack_tracker_connect_response (char response[16]);

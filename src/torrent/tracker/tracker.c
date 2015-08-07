@@ -20,8 +20,10 @@
 #include "torrent/tracker/tracker.h"
 #include "torrent/tracker/tracker_packets.h"
 #include "torrent/torrent.h"
+#include "torrent/tracker/packets/tracker_connect_packet.h"
 
-Tracker *Tracker_new(size_t size, char *address)
+
+Tracker * Tracker_new(size_t size, char *address)
 {
 	Tracker *tracker = malloc(size);
     check_mem(tracker);
