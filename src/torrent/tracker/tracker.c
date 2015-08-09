@@ -18,7 +18,6 @@
 #include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/tracker/tracker.h"
-#include "torrent/tracker/tracker_packets.h"
 #include "torrent/torrent.h"
 #include "torrent/tracker/packets/tracker_connect_packet.h"
 
@@ -85,6 +84,7 @@ int Tracker_init(Tracker *this, char *address)
     // make dns request to get tracker ip
     this->ip = malloc(32);
     check_mem(this->ip);
+
     net_utils.hostname_to_ip(this->url, this->ip);
 
     this->last_transaction_id = 0;
@@ -136,33 +136,31 @@ int Tracker_connect(Tracker *this)
         this->tracker_socket = NEW(UDP_Socket, this->ip, atoi(this->port));
         check_mem(this->tracker_socket);
     }
+    Tracker_Connect_Object * connect_req = NULL;
 
     int result = this->tracker_socket->connect(this->tracker_socket);
     if(result == EXIT_SUCCESS){
         this->generate_transID(this);
 
         // set up packet
-        char conn_request[16];
-        tracker_connect_request.prepare_request(this->last_transaction_id, conn_request);
-
+        connect_req = NEW(Tracker_Connect_Object, this->last_transaction_id);
         // send packet
-        this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
+        connect_req->send(connect_req, this->tracker_socket);
 
-        char out[2048];
-        ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
-
-        if(packet_size != -1){
-            struct tracker_connect_response response = tracker_connect_request.unpack_response(out);
-
-            if(response.action == 0 && this->last_transaction_id == response.transaction_id){
+        int result = connect_req->receive(connect_req, this->tracker_socket);
+        
+        if(result == EXIT_SUCCESS){
+            if(connect_req->response->action == 0 && this->last_transaction_id == connect_req->response->transaction_id){
                 this->connected = 1;
                 this->attempts = 0;
 
-                memcpy(&this->connection_id, &response.connection_id, sizeof(int64_t));
+                memcpy(&this->connection_id, &connect_req->response->connection_id, sizeof(int64_t));
                 
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
                 debug("received connection_id %" PRId64, this->connection_id);
                 
+                connect_req->destroy(connect_req);
+
                 return EXIT_SUCCESS;
             } else {
                 goto error;
@@ -170,6 +168,9 @@ int Tracker_connect(Tracker *this)
         } else {
             if(this->attempts < this->max_attempts){
                 this->attempts++;
+                
+                connect_req->destroy(connect_req);
+
                 return this->connect(this);
             } else {
                 goto error;
@@ -182,6 +183,7 @@ int Tracker_connect(Tracker *this)
     return EXIT_SUCCESS;
 
 error:
+    if(connect_req) { connect_req->destroy(connect_req); }
     if(this->attempts != 0){
         this->attempts = 0;
         fprintf(stderr, " %s✘%s\n", KRED, KNRM);

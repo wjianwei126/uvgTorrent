@@ -17,7 +17,7 @@ Tracker_Connect_Request * Tracker_Connect_Request_new(size_t size, int32_t trans
     req->destroy = Tracker_Connect_Request_destroy;
     req->print= Tracker_Connect_Request_print;
 
-    if(req->init(req, req->transaction_id) == EXIT_FAILURE) {
+    if(req->init(req, transaction_id) == EXIT_FAILURE) {
         throw("Tracker_Connect_Request init failed");
     } else {
         // all done, we made an object of any type
@@ -178,7 +178,7 @@ int Tracker_Connect_Object_receive (Tracker_Connect_Object *this, UDP_Socket * s
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);
-    
+
     if(packet_size != -1){
     	/* prepare request */
 		this->response = NEW(Tracker_Connect_Response, out);
