@@ -136,14 +136,14 @@ int Tracker_connect(Tracker *this)
         this->tracker_socket = NEW(UDP_Socket, this->ip, atoi(this->port));
         check_mem(this->tracker_socket);
     }
-    Tracker_Connect_Object * connect_req = NULL;
+    Tracker_Connect_Packet * connect_req = NULL;
 
     int result = this->tracker_socket->connect(this->tracker_socket);
     if(result == EXIT_SUCCESS){
         this->generate_transID(this);
 
         // set up packet
-        connect_req = NEW(Tracker_Connect_Object, this->last_transaction_id);
+        connect_req = NEW(Tracker_Connect_Packet, this->last_transaction_id);
         // send packet
         connect_req->send(connect_req, this->tracker_socket);
 

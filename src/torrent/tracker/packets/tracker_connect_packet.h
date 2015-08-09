@@ -42,24 +42,24 @@ void Tracker_Connect_Response_destroy (Tracker_Connect_Response *this);
 void Tracker_Connect_Response_print (Tracker_Connect_Response *this);
 
 /* TRACKER CONNECT WRAPPER */
-typedef struct Tracker_Connect_Object Tracker_Connect_Object;
-struct Tracker_Connect_Object {
-	int (*init) (Tracker_Connect_Object *this, int32_t transaction_id);
-    void (*print) (Tracker_Connect_Object *this);
-    void (*destroy) (Tracker_Connect_Object *this);
+typedef struct Tracker_Connect_Packet Tracker_Connect_Packet;
+struct Tracker_Connect_Packet {
+	int (*init) (Tracker_Connect_Packet *this, int32_t transaction_id);
+    void (*print) (Tracker_Connect_Packet *this);
+    void (*destroy) (Tracker_Connect_Packet *this);
 
-	int (*send) (Tracker_Connect_Object *this, UDP_Socket * socket);
-	int (*receive) (Tracker_Connect_Object *this, UDP_Socket * socket);
+	int (*send) (Tracker_Connect_Packet *this, UDP_Socket * socket);
+	int (*receive) (Tracker_Connect_Packet *this, UDP_Socket * socket);
 
 	Tracker_Connect_Request * request;
 	Tracker_Connect_Response * response;
 };
 
-Tracker_Connect_Object * Tracker_Connect_Object_new (size_t size, int32_t transaction_id);
-int Tracker_Connect_Object_init (Tracker_Connect_Object *this, int32_t transaction_id);
-void Tracker_Connect_Object_destroy (Tracker_Connect_Object *this);
-void Tracker_Connect_Object_print (Tracker_Connect_Object *this);
+Tracker_Connect_Packet * Tracker_Connect_Packet_new (size_t size, int32_t transaction_id);
+int Tracker_Connect_Packet_init (Tracker_Connect_Packet *this, int32_t transaction_id);
+void Tracker_Connect_Packet_destroy (Tracker_Connect_Packet *this);
+void Tracker_Connect_Packet_print (Tracker_Connect_Packet *this);
 
-int Tracker_Connect_Object_send (Tracker_Connect_Object *this, UDP_Socket * socket);
-int Tracker_Connect_Object_receive (Tracker_Connect_Object *this, UDP_Socket * socket);
+int Tracker_Connect_Packet_send (Tracker_Connect_Packet *this, UDP_Socket * socket);
+int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, UDP_Socket * socket);
 #endif
