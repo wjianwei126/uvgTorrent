@@ -224,7 +224,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     /* hardcoded peer_id -> replace with random val */
     char * peer_id = "UVG01234567891234567";
 
-    /* prepare the announce request packet */
+    /* prepare the announce request packet 
     char conn_request[100];
     tracker_announce_request.prepare_request(this->connection_id, this->last_transaction_id, info_hash_bytes, peer_id, conn_request);
     
@@ -282,10 +282,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             this->attempts++;
             this->announce(this, torrent);
         }
-    }
+    }*/
 
     info_hash_list->destroy(info_hash_list);
-    free(out);
+    //free(out);
     return EXIT_SUCCESS;
 error:
     if(this->attempts != 0){

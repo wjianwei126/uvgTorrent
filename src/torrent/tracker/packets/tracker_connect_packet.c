@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "utils/net/net_utils.h"
 #include "torrent/tracker/packets/tracker_connect_packet.h"
 
 /* CONNECT REQUEST */
@@ -16,7 +17,7 @@ Tracker_Connect_Request * Tracker_Connect_Request_new(size_t size, int32_t trans
     req->destroy = Tracker_Connect_Request_destroy;
     req->print= Tracker_Connect_Request_print;
 
-    if(req->init(req->transaction_id) == EXIT_FAILURE) {
+    if(req->init(req, req->transaction_id) == EXIT_FAILURE) {
         throw("Tracker_Connect_Request init failed");
     } else {
         // all done, we made an object of any type
@@ -74,7 +75,7 @@ Tracker_Connect_Response * Tracker_Connect_Response_new(size_t size, char raw_re
     req->destroy = Tracker_Connect_Response_destroy;
     req->print= Tracker_Connect_Response_print;
 
-    if(req->init(raw_response) == EXIT_FAILURE) {
+    if(req->init(req, raw_response) == EXIT_FAILURE) {
         throw("Tracker_Connect_Response init failed");
     } else {
         // all done, we made an object of any type
@@ -88,7 +89,7 @@ error:
 
 int Tracker_Connect_Response_init(Tracker_Connect_Response *this, char raw_response[2048])
 {
-	struct tracker_connect_response resp;
+	//struct tracker_connect_response resp;
 
 	size_t pos = 0;
 	memcpy(&this->action, &raw_response[pos], sizeof(int32_t));
@@ -116,7 +117,7 @@ void Tracker_Connect_Response_print(Tracker_Connect_Response *this)
 }
 
 /* CONNECT WRAPPER */
-Tracker_Connect_Object * Tracker_Connect_new (size_t size, int32_t transaction_id)
+Tracker_Connect_Object * Tracker_Connect_Object_new (size_t size, int32_t transaction_id)
 {
 	Tracker_Connect_Object *conn = malloc(size);
     check_mem(conn);
@@ -140,7 +141,7 @@ error:
     return NULL;
 }
 
-int Tracker_Connect_init (Tracker_Connect_Object *this, int32_t transaction_id)
+int Tracker_Connect_Object_init (Tracker_Connect_Object *this, int32_t transaction_id)
 {
 	this->request = NULL;
 	this->response = NULL;
@@ -154,7 +155,7 @@ error:
     return EXIT_FAILURE;
 }
 
-void Tracker_Connect_destroy (Tracker_Connect_Object *this)
+void Tracker_Connect_Object_destroy (Tracker_Connect_Object *this)
 {
 	if(this){
 		if(this->request != NULL) { this->request->destroy(this->request); };
@@ -163,17 +164,17 @@ void Tracker_Connect_destroy (Tracker_Connect_Object *this)
 	}
 }
 
-void Tracker_Connect_print (Tracker_Connect_Object *this)
+void Tracker_Connect_Object_print (Tracker_Connect_Object *this)
 {
 
 }
 
-int Tracker_Connect_send (Tracker_Connect_Object *this, UDP_Socket * socket)
+int Tracker_Connect_Object_send (Tracker_Connect_Object *this, UDP_Socket * socket)
 {
 	return socket->send(socket, &this->request->bytes, sizeof(this->request->bytes));
 }
 
-int Tracker_Connect_receive (Tracker_Connect_Object *this, UDP_Socket * socket)
+int Tracker_Connect_Object_receive (Tracker_Connect_Object *this, UDP_Socket * socket)
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);
