@@ -3,7 +3,6 @@
 
 #include "macro/macro.h"
 #include "utils/sock/udp_socket.h"
-#include "data_structures/linkedlist/linkedlist.h"
 
 /* TRACKER CONNECT REQUEST */
 typedef struct Tracker_Connect_Request Tracker_Connect_Request;
@@ -33,7 +32,6 @@ struct Tracker_Connect_Response {
 	int32_t action; 			/* 0 == SUCCESS, 3 == ERROR 			*/
 	int32_t transaction_id;		/* should match value sent with request */
 	int64_t connection_id;		/* connection_id for future use 		*/
-	Linkedlist * peers;
 };
 
 Tracker_Connect_Response *Tracker_Connect_Response_new (size_t size, char raw_response[2048]);
