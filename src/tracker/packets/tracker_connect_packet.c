@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include "utils/net/net_utils.h"
-#include "torrent/tracker/packets/tracker_connect_packet.h"
+#include "tracker/packets/tracker_connect_packet.h"
 
 /* CONNECT REQUEST */
 Tracker_Connect_Request * Tracker_Connect_Request_new(size_t size, int32_t transaction_id)

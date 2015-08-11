@@ -17,10 +17,10 @@
 #include "utils/rand/rand_utils.h"
 #include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
-#include "torrent/tracker/tracker.h"
+#include "tracker/tracker.h"
 #include "torrent/torrent.h"
-#include "torrent/tracker/packets/tracker_connect_packet.h"
-#include "torrent/tracker/packets/tracker_announce_packet.h"
+#include "tracker/packets/tracker_connect_packet.h"
+#include "tracker/packets/tracker_announce_packet.h"
 
 
 Tracker * Tracker_new(size_t size, char *address)

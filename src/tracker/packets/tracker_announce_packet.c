@@ -9,7 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "utils/net/net_utils.h"
-#include "torrent/tracker/packets/tracker_announce_packet.h"
+#include "tracker/packets/tracker_announce_packet.h"
 
 /* CONNECT REQUEST */
 Tracker_Announce_Request * Tracker_Announce_Request_new(size_t size, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id)

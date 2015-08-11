@@ -9,7 +9,7 @@
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/torrent.h"
-#include "torrent/tracker/tracker.h"
+#include "tracker/tracker.h"
 
 Torrent *Torrent_new(size_t size, char *path)
 {
