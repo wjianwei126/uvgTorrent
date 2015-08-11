@@ -116,7 +116,9 @@ int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connec
 
 void Tracker_Announce_Request_destroy(Tracker_Announce_Request *this)
 {
-	if(this) { free(this); };
+	if(this) { 
+		free(this); 
+	};
 }
 
 void Tracker_Announce_Request_print(Tracker_Announce_Request *this)
@@ -168,6 +170,10 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 	memcpy(&this->seeders, &raw_response[pos], sizeof(int32_t));
 	this->seeders = net_utils.ntohl(this->seeders);
 	pos += sizeof(int32_t);
+
+	this->peers = NULL;
+	this->peers = NEW(Linkedlist);
+    check_mem(this->peers);
     
     size_t last_peer_position = res_size - 22;
     size_t peer_position = 0;
@@ -184,16 +190,22 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 
         //debug("peer :: %s:%" PRId16, ip, port);
         peer_position += sizeof(int32_t) + sizeof(uint16_t);
-
+        this->peers->append(this->peers, ip, strlen(ip));
     }
 
 
 	return EXIT_SUCCESS;
+
+error:
+	return EXIT_FAILURE;
 }
 
 void Tracker_Announce_Response_destroy(Tracker_Announce_Response *this)
 {
-	if(this) { free(this); };
+	if(this) { 
+		if(this->peers) { this->peers->destroy(this->peers); };
+		free(this); 
+	};
 }
 
 void Tracker_Announce_Response_print(Tracker_Announce_Response *this)

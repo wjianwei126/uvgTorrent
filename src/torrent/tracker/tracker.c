@@ -247,6 +247,13 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             debug("seeders :: %" PRId32, announce_req->response->seeders);
             debug("leechers :: %" PRId32, announce_req->response->leechers);
             
+            Linkednode * curr = announce_req->response->peers->head;        
+            while(curr){
+                char * ip = (char *)curr->value;
+                debug("peer :: %s", ip);
+                curr = curr->next;
+            }
+
             announce_req->destroy(announce_req);
 
             return EXIT_SUCCESS;
