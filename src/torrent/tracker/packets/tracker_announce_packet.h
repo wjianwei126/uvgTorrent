@@ -8,14 +8,33 @@
 /* TRACKER CONNECT REQUEST */
 typedef struct Tracker_Announce_Request Tracker_Announce_Request;
 struct Tracker_Announce_Request { 
-	int (*init) (Tracker_Announce_Request *this, int32_t transaction_id);
+	int (*init) (Tracker_Announce_Request *this, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id);
     void (*print) (Tracker_Announce_Request *this);
     void (*destroy) (Tracker_Announce_Request *this);
 
-	int64_t connection_id;		/* always 0x41727101980 */
-	int32_t action;				/* always 0 			*/
-	int32_t transaction_id;		/* always 0 			*/
-	char bytes[16];
+	int64_t 	connection_id; 	/* connection id verified by tracker */
+	int32_t 	action; 		/* always 1 */
+	int32_t 	transaction_id; /* randomly generated transaction id */
+	int8_t	 	info_hash[20];	/* torrent info hash */
+	int8_t	 	peer_id[20];	/* generated peer id */
+	int64_t 	downloaded;		/* number of bytes downloaded */
+	int64_t 	left;			/* number of bytes remaining */
+	int64_t 	uploaded;		/* number of bytes uploaded */
+
+	
+	int32_t 	event;			/* event being announced 
+								*	none = 0
+							    *   completed = 1
+							    *   started = 2
+							    *   stopped = 3 */
+
+	uint32_t 	ip;				/* local ip address */
+	uint32_t 	key;			/* randomized unique key */
+	int32_t 	num_want;		/* maximum number of desired peers - -1 default */
+	uint16_t 	port;			/* local port */
+	uint16_t 	extensions;
+	
+	char bytes[100];
 };
 
 Tracker_Announce_Request *Tracker_Announce_Request_new (size_t size, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id);
@@ -46,7 +65,7 @@ void Tracker_Announce_Response_print (Tracker_Announce_Response *this);
 /* TRACKER CONNECT WRAPPER */
 typedef struct Tracker_Announce_Packet Tracker_Announce_Packet;
 struct Tracker_Announce_Packet {
-	int (*init) (Tracker_Announce_Packet *this, int32_t transaction_id);
+	int (*init) (Tracker_Announce_Packet *this, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id);
     void (*print) (Tracker_Announce_Packet *this);
     void (*destroy) (Tracker_Announce_Packet *this);
 
@@ -57,8 +76,8 @@ struct Tracker_Announce_Packet {
 	Tracker_Announce_Response * response;
 };
 
-Tracker_Announce_Packet * Tracker_Announce_Packet_new (size_t size, int32_t transaction_id);
-int Tracker_Announce_Packet_init (Tracker_Announce_Packet *this, int32_t transaction_id);
+Tracker_Announce_Packet * Tracker_Announce_Packet_new (size_t size, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id);
+int Tracker_Announce_Packet_init (Tracker_Announce_Packet *this, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id);
 void Tracker_Announce_Packet_destroy (Tracker_Announce_Packet *this);
 void Tracker_Announce_Packet_print (Tracker_Announce_Packet *this);
 
