@@ -25,7 +25,7 @@ void Tracker_Connect_Request_print (Tracker_Connect_Request *this);
 /* TRACKER CONNECT RESPONSE */
 typedef struct Tracker_Connect_Response Tracker_Connect_Response;
 struct Tracker_Connect_Response { 
-	int (*init) (Tracker_Connect_Response *this, char raw_response[2048]);
+	int (*init) (Tracker_Connect_Response *this, char raw_response[2048], ssize_t res_size);
     void (*print) (Tracker_Connect_Response *this);
     void (*destroy) (Tracker_Connect_Response *this);
 
@@ -34,8 +34,8 @@ struct Tracker_Connect_Response {
 	int64_t connection_id;		/* connection_id for future use 		*/
 };
 
-Tracker_Connect_Response *Tracker_Connect_Response_new (size_t size, char raw_response[2048]);
-int Tracker_Connect_Response_init (Tracker_Connect_Response *this, char raw_response[2048]);
+Tracker_Connect_Response *Tracker_Connect_Response_new (size_t size, char raw_response[2048], ssize_t res_size);
+int Tracker_Connect_Response_init (Tracker_Connect_Response *this, char raw_response[2048], ssize_t res_size);
 void Tracker_Connect_Response_destroy (Tracker_Connect_Response *this);
 void Tracker_Connect_Response_print (Tracker_Connect_Response *this);
 

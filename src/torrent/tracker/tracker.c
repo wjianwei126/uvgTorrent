@@ -20,6 +20,7 @@
 #include "torrent/tracker/tracker.h"
 #include "torrent/torrent.h"
 #include "torrent/tracker/packets/tracker_connect_packet.h"
+#include "torrent/tracker/packets/tracker_announce_packet.h"
 
 
 Tracker * Tracker_new(size_t size, char *address)
@@ -226,57 +227,33 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     /* hardcoded peer_id -> replace with random val */
     char * peer_id = "UVG01234567891234567";
 
-    /* prepare the announce request packet 
-    char conn_request[100];
-    tracker_announce_request.prepare_request(this->connection_id, this->last_transaction_id, info_hash_bytes, peer_id, conn_request);
+    /* prepare the announce request packet */
+    Tracker_Announce_Packet * announce_req = NULL;
+    announce_req = NEW(Tracker_Announce_Packet, this->connection_id, this->last_transaction_id, info_hash_bytes, peer_id);
     
-    // send packet
-    this->tracker_socket->send(this->tracker_socket, &conn_request, sizeof(conn_request));
+    announce_req->send(announce_req, this->tracker_socket);
 
-    char out[2048];
-    ssize_t packet_size = this->tracker_socket->receive(this->tracker_socket, out);
-    if(packet_size != -1){
-        struct tracker_announce_response response = tracker_announce_request.unpack_response(out);
-
-        if(response.action == 1 && this->last_transaction_id == response.transaction_id){
+    int result = announce_req->receive(announce_req, this->tracker_socket);
+    
+    if(result == EXIT_SUCCESS){
+        if(announce_req->response->action == 1 && this->last_transaction_id == announce_req->response->transaction_id){
             this->attempts = 0;
             info_hash_list->destroy(info_hash_list);
             fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
-            debug("action :: %" PRId32, response.action);
-            debug("transaction_id :: %" PRId32, response.transaction_id);
-            debug("interval :: %" PRId32, response.interval);
-            debug("seeders :: %" PRId32, response.seeders);
-            debug("leechers :: %" PRId32, response.leechers);
+            debug("action :: %" PRId32, announce_req->response->action);
+            debug("transaction_id :: %" PRId32, announce_req->response->transaction_id);
+            debug("interval :: %" PRId32, announce_req->response->interval);
+            debug("seeders :: %" PRId32, announce_req->response->seeders);
+            debug("leechers :: %" PRId32, announce_req->response->leechers);
             
-            size_t last_peer_position = packet_size - 22;
-            size_t peer_position = 0;
+            announce_req->destroy(announce_req);
 
-            while ( peer_position < last_peer_position ) {
-                // loop through peers until end of response from tracker
-                struct in_addr * peer_ip = (struct in_addr *) &succ->ip + peer_position;
-                uint16_t port = net_utils.ntohs(*(uint16_t *)&succ->ip + peer_position + sizeof(int32_t));
-                char * ip = inet_ntoa(*peer_ip);
-
-                if(strcmp(ip,"0.0.0.0") == 0){
-                    break;
-                }
-
-                debug("peer :: %s:%" PRId16, ip, port);
-                peer_position += sizeof(int32_t) + sizeof(uint16_t);
-
-            }
-
-            free(out);
             return EXIT_SUCCESS;
         } else {
-            debug("action :: %" PRId32, resp->action);
-            debug("transid1 :: %" PRId32, resp->transaction_id);
-            debug("transid2 :: %" PRId32, this->last_transaction_id);
-
             fprintf(stderr, " %s✘%s\n", KRED, KNRM);
-            fprintf(stderr, KRED "[ERROR] %s\n" KNRM, ((strlen((char *)resp->error_string) != 0) ? (char *)resp->error_string : "no error given by tracker"));
-            free(out);
+            //fprintf(stderr, KRED "[ERROR] %s\n" KNRM, ((strlen((char *)resp->error_string) != 0) ? (char *)resp->error_string : "no error given by tracker"));
+            
             goto error;
         }
     } else {
@@ -284,8 +261,9 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             this->attempts++;
             this->announce(this, torrent);
         }
-    }*/
-
+    }
+    
+    announce_req->destroy(announce_req);
     info_hash_list->destroy(info_hash_list);
     //free(out);
     return EXIT_SUCCESS;
@@ -295,6 +273,8 @@ error:
         fprintf(stderr, " %s✘%s\n", KRED, KNRM);
     }
     if(info_hash_list != NULL) { info_hash_list->destroy(info_hash_list); };
+    if(announce_req != NULL) { announce_req->destroy(announce_req); };
+
     return EXIT_FAILURE;
 }
 

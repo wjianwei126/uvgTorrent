@@ -66,7 +66,7 @@ void Tracker_Connect_Request_print(Tracker_Connect_Request *this)
 }
 
 /* CONNECT RESPONSE */
-Tracker_Connect_Response * Tracker_Connect_Response_new(size_t size, char raw_response[2048])
+Tracker_Connect_Response * Tracker_Connect_Response_new(size_t size, char raw_response[2048], ssize_t res_size)
 {
 	Tracker_Connect_Response *req = malloc(size);
     check_mem(req);
@@ -75,7 +75,7 @@ Tracker_Connect_Response * Tracker_Connect_Response_new(size_t size, char raw_re
     req->destroy = Tracker_Connect_Response_destroy;
     req->print= Tracker_Connect_Response_print;
 
-    if(req->init(req, raw_response) == EXIT_FAILURE) {
+    if(req->init(req, raw_response, res_size) == EXIT_FAILURE) {
         throw("Tracker_Connect_Response init failed");
     } else {
         // all done, we made an object of any type
@@ -87,7 +87,7 @@ error:
     return NULL;
 }
 
-int Tracker_Connect_Response_init(Tracker_Connect_Response *this, char raw_response[2048])
+int Tracker_Connect_Response_init(Tracker_Connect_Response *this, char raw_response[2048], ssize_t res_size)
 {
 	//struct tracker_connect_response resp;
 
@@ -181,7 +181,7 @@ int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, UDP_Socket * s
 
     if(packet_size != -1){
     	/* prepare request */
-		this->response = NEW(Tracker_Connect_Response, out);
+		this->response = NEW(Tracker_Connect_Response, out, packet_size);
 		check_mem(this->response);
 
     	return EXIT_SUCCESS;

@@ -33,7 +33,7 @@ struct Tracker_Announce_Request {
 	int32_t 	num_want;		/* maximum number of desired peers - -1 default */
 	uint16_t 	port;			/* local port */
 	uint16_t 	extensions;
-	
+
 	char bytes[100];
 };
 
@@ -45,7 +45,7 @@ void Tracker_Announce_Request_print (Tracker_Announce_Request *this);
 /* TRACKER CONNECT RESPONSE */
 typedef struct Tracker_Announce_Response Tracker_Announce_Response;
 struct Tracker_Announce_Response { 
-	int (*init) (Tracker_Announce_Response *this, char raw_response[2048]);
+	int (*init) (Tracker_Announce_Response *this, char raw_response[2048], ssize_t res_size);
     void (*print) (Tracker_Announce_Response *this);
     void (*destroy) (Tracker_Announce_Response *this);
 
@@ -57,8 +57,8 @@ struct Tracker_Announce_Response {
 	Linkedlist * peers;
 };
 
-Tracker_Announce_Response *Tracker_Announce_Response_new (size_t size, char raw_response[2048]);
-int Tracker_Announce_Response_init (Tracker_Announce_Response *this, char raw_response[2048]);
+Tracker_Announce_Response *Tracker_Announce_Response_new (size_t size, char raw_response[2048], ssize_t res_size);
+int Tracker_Announce_Response_init (Tracker_Announce_Response *this, char raw_response[2048], ssize_t res_size);
 void Tracker_Announce_Response_destroy (Tracker_Announce_Response *this);
 void Tracker_Announce_Response_print (Tracker_Announce_Response *this);
 

@@ -4,6 +4,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <endian.h>
+#include <inttypes.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include "utils/net/net_utils.h"
 #include "torrent/tracker/packets/tracker_announce_packet.h"
 
@@ -44,7 +48,9 @@ int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connec
     uint16_t port = net_utils.htons(0);
     uint16_t extensions = net_utils.htons(0);
 
-	memcpy(&this->connection_id, &connection_id, sizeof(int64_t));
+    int64_t conn_id = net_utils.htonll(connection_id);
+
+	memcpy(&this->connection_id, &conn_id, sizeof(int64_t));
 	memcpy(&this->action, &action, sizeof(int32_t));
 	memcpy(&this->transaction_id, &transaction_id, sizeof(int32_t));	
 	memcpy(&this->info_hash, &info_hash_bytes, sizeof(int8_t) * 20);	
@@ -62,7 +68,7 @@ int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connec
 
 	size_t pos = 0;
 
-	memcpy(&this->bytes[pos], &connection_id, 8);
+	memcpy(&this->bytes[pos], &conn_id, 8);
 	pos += sizeof(int64_t);
 
 	memcpy(&this->bytes[pos], &action, sizeof(int32_t));
@@ -119,7 +125,7 @@ void Tracker_Announce_Request_print(Tracker_Announce_Request *this)
 }
 
 /* CONNECT RESPONSE */
-Tracker_Announce_Response * Tracker_Announce_Response_new(size_t size, char raw_response[2048])
+Tracker_Announce_Response * Tracker_Announce_Response_new(size_t size, char raw_response[2048], ssize_t res_size)
 {
 	Tracker_Announce_Response *req = malloc(size);
     check_mem(req);
@@ -128,7 +134,7 @@ Tracker_Announce_Response * Tracker_Announce_Response_new(size_t size, char raw_
     req->destroy = Tracker_Announce_Response_destroy;
     req->print= Tracker_Announce_Response_print;
 
-    if(req->init(req, raw_response) == EXIT_FAILURE) {
+    if(req->init(req, raw_response, res_size) == EXIT_FAILURE) {
         throw("Tracker_Announce_Response init failed");
     } else {
         // all done, we made an object of any type
@@ -140,10 +146,10 @@ error:
     return NULL;
 }
 
-int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_response[2048])
+int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_response[2048], ssize_t res_size)
 {
-	/*
 	size_t pos = 0;
+
 	memcpy(&this->action, &raw_response[pos], sizeof(int32_t));
 	this->action = net_utils.ntohl(this->action);
 	pos += sizeof(int32_t);
@@ -151,9 +157,36 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 	memcpy(&this->transaction_id, &raw_response[pos], sizeof(int32_t));
 	pos += sizeof(int32_t);
 
-	memcpy(&this->connection_id, &raw_response[pos], sizeof(int64_t));
-	this->connection_id = net_utils.ntohll(this->connection_id);
-	pos += sizeof(int64_t);*/
+	memcpy(&this->interval, &raw_response[pos], sizeof(int32_t));
+	this->interval = net_utils.ntohl(this->interval);
+	pos += sizeof(int32_t);
+
+	memcpy(&this->leechers, &raw_response[pos], sizeof(int32_t));
+	this->leechers = net_utils.ntohl(this->leechers);
+	pos += sizeof(int32_t);
+
+	memcpy(&this->seeders, &raw_response[pos], sizeof(int32_t));
+	this->seeders = net_utils.ntohl(this->seeders);
+	pos += sizeof(int32_t);
+    
+    size_t last_peer_position = res_size - 22;
+    size_t peer_position = 0;
+
+    while ( peer_position < last_peer_position ) {
+        // loop through peers until end of response from tracker
+        struct in_addr * peer_ip = (struct in_addr *) &raw_response[pos] + peer_position;
+        uint16_t port = net_utils.ntohs(*(uint16_t *)&raw_response[pos] + peer_position + sizeof(int32_t));
+        char * ip = inet_ntoa(*peer_ip);
+
+        if(strcmp(ip,"0.0.0.0") == 0){
+            break;
+        }
+
+        //debug("peer :: %s:%" PRId16, ip, port);
+        peer_position += sizeof(int32_t) + sizeof(uint16_t);
+
+    }
+
 
 	return EXIT_SUCCESS;
 }
@@ -233,7 +266,7 @@ int Tracker_Announce_Packet_receive (Tracker_Announce_Packet *this, UDP_Socket *
 
     if(packet_size != -1){
     	/* prepare request */
-		this->response = NEW(Tracker_Announce_Response, out);
+		this->response = NEW(Tracker_Announce_Response, out, packet_size);
 		check_mem(this->response);
 
     	return EXIT_SUCCESS;
