@@ -11,11 +11,11 @@ A C Torrent Client - Simon Bursten - https://github.com/unovongalixor
 
 # Purpose
 
-To explore the torrent protocol. uvgTorrent will allow a user to input a magnet link, select a file to stream and then set up a stream which can be viewed via vlc. Bonus points for launching vlc and streaming the correct stream automaticaly.
+To explore the torrent protocol. uvgTorrent will allow a user to input a magnet link, select a file to stream and then set up a stream which can be viewed via vlc. Bonus points for launching vlc and streaming the file as chunks are downloaded sequentialy.
 
 # Current Status
 
-- Margnet URI is being parsed and connection packet is being sent + received from the trackers
+- Magnet URI is being parsed and connection packet is being sent + received from the trackers
 
 # to do
 
