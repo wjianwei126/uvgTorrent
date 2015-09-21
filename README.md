@@ -18,7 +18,7 @@ To explore the torrent protocol. uvgTorrent will allow a user to input a magnet 
 
 # to do
 
-- Tracker object should conduct it's conversation with the tracker in a seperate thread which it will manage
+- Tracker object should conduct it's conversation with the tracker via a ThreadPool (yet to be developed) which will manage cross thread communication using queues.
 - Tracker object should send announce request to tracker server and return information on available peers
 - Clean up container destroy functions. Linkedlist and Hashtable types can store conplex structs which need to be destroyed by calling the destroy method to make sure any internaly stored data is also free'd. I'm thinking of creating 2 destroy functions for these structures - destroy_free (called when you want to call free on stored data) and destroy (called when you want to call destroy on stored data)
 
