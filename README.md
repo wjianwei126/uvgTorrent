@@ -5,8 +5,9 @@ A C Torrent Client - Simon Bursten - https://github.com/unovongalixor
 
 # Requirements
 
-GCC v4.8.2
-valgrind v3.10.0
+- GCC v4.8.2
+- valgrind v3.10.0
+- UNIX based OS (Ubuntu, etc) 
 
 # Purpose
 
