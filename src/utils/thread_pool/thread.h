@@ -12,7 +12,7 @@ struct Thread {
     void (*destroy)(Thread *this);
    	
    	Thread_Pool * pool;
-	int id;                          /* function's argument       */
+	int id;
 };
 
 Thread *Thread_new(size_t size, int id, Thread_Pool *pool);
