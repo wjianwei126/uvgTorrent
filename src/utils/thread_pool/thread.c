@@ -3,9 +3,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <pthread.h>
 #include "utils/thread_pool/thread.h"
+#include "data_structures/linkedlist/linkedlist.h"
 
-Thread *Thread_new(size_t size, int id, Thread_Pool *pool)
+Thread *Thread_new(size_t size, int id, Linkedlist * jobs)
 {
 	Thread *thread = malloc(size);
     check_mem(thread);
@@ -14,7 +16,10 @@ Thread *Thread_new(size_t size, int id, Thread_Pool *pool)
     thread->destroy = Thread_destroy;
     thread->print= Thread_print;
 
-    if(thread->init(thread, id, pool) == EXIT_FAILURE) {
+    thread->run= Thread_run;
+    thread->start= Thread_start;
+
+    if(thread->init(thread, id, jobs) == EXIT_FAILURE) {
         throw("thread init failed");
     } else {
         return thread;
@@ -25,24 +30,43 @@ error:
     return NULL;
 }
 
-int Thread_init(Thread *this, int id, Thread_Pool *pool)
+int Thread_init(Thread *this, int id, Linkedlist * jobs)
 {
-	this->id = malloc(sizeof(int));
-    check_mem(this->id);
-    memcpy(this->id, (void *)&id, sizeof(int));
+	this->id = id;
+    this->running = 1;
 
-    this->pool = pool;
+    this->jobs = jobs;
+
+    return EXIT_SUCCESS;
 }
 
 void Thread_destroy(Thread *this)
 {
 	if(this){
-		if(this->id){ free(this->id); };
         free(this);
 	}
 }
 
+void Thread_start(Thread *this)
+{
+    debug("START THREAD");
+    pthread_create(&this->thread, NULL, this->run, this);
+}
+
+void * Thread_run(void *this)
+{
+    Thread * thread = (Thread *) this;
+    while(1){
+        Job * job = (Job *) thread->jobs->get(thread->jobs, 0);
+        if(job){
+            job->print(job);
+        }
+    }
+
+    return (void *) NULL;
+}
+
 void Thread_print(Thread *this)
 {
-
+	debug("Thread :: %d", this->id);
 }

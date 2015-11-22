@@ -42,5 +42,5 @@ void Job_destroy(Job *this)
 
 void Job_print(Job *this)
 {
-
+    debug("JOB");
 }
