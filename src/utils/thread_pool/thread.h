@@ -9,7 +9,7 @@
 typedef struct Thread Thread;
 
 struct Thread {
-    int (*init)(Thread *this, int id, Linkedlist * jobs);
+    int (*init)(Thread *this, int id, Linkedlist * jobs, pthread_mutex_t * mutex);
     void (*print)(Thread *this);
     void (*destroy)(Thread *this);
 
@@ -19,12 +19,13 @@ struct Thread {
 	int id;
 	int running;
 	pthread_t thread;
+    pthread_mutex_t * mutex;
 
     Linkedlist * jobs;
 };
 
-Thread *Thread_new(size_t size, int id, Linkedlist * jobs);
-int Thread_init(Thread *this, int id, Linkedlist * jobs);
+Thread *Thread_new(size_t size, int id, Linkedlist * jobs, pthread_mutex_t * mutex);
+int Thread_init(Thread *this, int id, Linkedlist * jobs, pthread_mutex_t * mutex);
 void Thread_destroy(Thread *this);
 void Thread_print(Thread *this);
 

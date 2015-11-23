@@ -4,10 +4,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <signal.h>
 #include "utils/thread_pool/thread.h"
 #include "data_structures/linkedlist/linkedlist.h"
 
-Thread *Thread_new(size_t size, int id, Linkedlist * jobs)
+Thread *Thread_new(size_t size, int id, Linkedlist * jobs, pthread_mutex_t * mutex)
 {
 	Thread *thread = malloc(size);
     check_mem(thread);
@@ -19,7 +20,7 @@ Thread *Thread_new(size_t size, int id, Linkedlist * jobs)
     thread->run= Thread_run;
     thread->start= Thread_start;
 
-    if(thread->init(thread, id, jobs) == EXIT_FAILURE) {
+    if(thread->init(thread, id, jobs, mutex) == EXIT_FAILURE) {
         throw("thread init failed");
     } else {
         return thread;
@@ -30,12 +31,14 @@ error:
     return NULL;
 }
 
-int Thread_init(Thread *this, int id, Linkedlist * jobs)
+int Thread_init(Thread *this, int id, Linkedlist * jobs, pthread_mutex_t * mutex)
 {
 	this->id = id;
-    this->running = 1;
+    this->running = 1;  
 
+    this->thread = 0;
     this->jobs = jobs;
+    this->mutex = mutex;
 
     return EXIT_SUCCESS;
 }
@@ -43,26 +46,50 @@ int Thread_init(Thread *this, int id, Linkedlist * jobs)
 void Thread_destroy(Thread *this)
 {
 	if(this){
+        if(this->thread) {
+            // use the running bool to tell the thread to exit
+            // at the next available opportunity.
+            this->running = 0;
+
+            // wait until thread has exited naturaly
+            while (pthread_kill(this->thread,0) == 0) { }
+
+            // close down the thread we spawned
+            pthread_join(this->thread, NULL);
+        };
         free(this);
 	}
 }
 
 void Thread_start(Thread *this)
 {
-    debug("START THREAD");
     pthread_create(&this->thread, NULL, this->run, this);
+    pthread_detach( this->thread );
 }
 
 void * Thread_run(void *this)
 {
     Thread * thread = (Thread *) this;
-    while(1){
-        Job * job = (Job *) thread->jobs->get(thread->jobs, 0);
-        if(job){
-            job->print(job);
+    while(thread->running == 1){
+        Linkednode * node = NULL;
+        
+        pthread_mutex_lock(thread->mutex);
+        //if(thread->jobs->count != 0){
+            node = thread->jobs->pop(thread->jobs);
+        //}
+        pthread_mutex_unlock(thread->mutex);
+
+        if(node){
+            Job * job = (Job *) node->get(node);
+            job->function(job->arg);
+            job->destroy(job);
+            job = NULL;
+            
+            node->value = NULL;
+            node->destroy(node);
         }
     }
-
+    
     return (void *) NULL;
 }
 

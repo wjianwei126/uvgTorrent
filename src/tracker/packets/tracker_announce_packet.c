@@ -35,7 +35,7 @@ error:
 
 int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connection_id, int32_t transaction_id, int8_t info_hash_bytes[20], char *	peer_id)
 {
-	size_t length = 100;
+	// size_t length = 100;
 
 	int32_t action = net_utils.htonl(1);
 	int64_t downloaded = net_utils.htonll(0);
@@ -181,7 +181,7 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
     while ( peer_position < last_peer_position ) {
         // loop through peers until end of response from tracker
         struct in_addr * peer_ip = (struct in_addr *) &raw_response[pos] + peer_position;
-        uint16_t port = net_utils.ntohs(*(uint16_t *)&raw_response[pos] + peer_position + sizeof(int32_t));
+        // uint16_t port = net_utils.ntohs(*(uint16_t *)&raw_response[pos] + peer_position + sizeof(int32_t));
         char * ip = inet_ntoa(*peer_ip);
 
         if(strcmp(ip,"0.0.0.0") == 0){

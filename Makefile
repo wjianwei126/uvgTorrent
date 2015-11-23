@@ -9,6 +9,11 @@ default:
 	make build
 	make test
 
+helgrind:
+	make clean
+	make build
+	make helgrind_test
+
 clean:
 	rm -f bin/$(TARGET)
 
@@ -17,3 +22,6 @@ build:
 
 test:
 	valgrind --leak-check=full --track-origins=yes ./bin/$(TARGET) torrents/test.magnet
+
+helgrind_test:
+	valgrind --tool=helgrind ./bin/$(TARGET) torrents/test.magnet

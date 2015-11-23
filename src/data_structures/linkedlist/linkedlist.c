@@ -29,6 +29,7 @@ Linkedlist * Linkedlist_new(size_t size)
     list->print =  Linkedlist_print;
 
     list->get = Linkedlist_get;
+    list->pop = Linkedlist_pop;
     list->append = Linkedlist_append;
 
     if(list->init(list) == EXIT_FAILURE) {
@@ -55,7 +56,7 @@ int Linkedlist_init(Linkedlist *this)
 {
     this->head = NULL;
     this->end = NULL;
-    this->count = -1;
+    this->count = 0;
 
     return EXIT_SUCCESS;
 }
@@ -109,6 +110,21 @@ error:
     return NULL;
 }
 
+Linkednode * Linkedlist_pop(Linkedlist *this)
+{
+    if(this->head == NULL) { return NULL; }
+
+    // the popped node becomes the responsibility
+    // or the object that receives it
+    Linkednode * result = this->head;
+    this->head = this->head->next;
+    result->next = NULL;
+
+    this->count--;
+    
+    return result;
+}
+
 /**
 * int Linkedlist_set(Linkedlist *this, int pos, const void *value, size_t value_size)
 *
@@ -156,7 +172,7 @@ int Linkedlist_append(Linkedlist *this, const void *value, size_t value_size){
 
     this->end->next = node;
     this->end = node;
-
+    this->end->next = NULL;
     this->count++;
 
     return EXIT_SUCCESS;

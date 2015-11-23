@@ -12,6 +12,7 @@ struct Linkedlist {
     void (*destroy)(Linkedlist *this);
 
     const void * (*get)(Linkedlist *this, int pos);
+    Linkednode * (*pop)(Linkedlist *this);
     int (*set)(Linkedlist *this, int pos, const void *value, size_t value_size);
     int (*append)(Linkedlist *this, const void *value, size_t value_size);
 
@@ -27,6 +28,7 @@ void Linkedlist_destroy(Linkedlist *this);
 void Linkedlist_print(Linkedlist *this);
 
 const void * Linkedlist_get(Linkedlist *this, int pos);
+Linkednode * Linkedlist_pop(Linkedlist *this);
 int Linkedlist_set(Linkedlist *this, int pos, const void *value, size_t value_size);
 int Linkedlist_append(Linkedlist *this, const void *value, size_t value_size);
 #endif

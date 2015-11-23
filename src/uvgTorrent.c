@@ -6,30 +6,42 @@
 #include "debug/debug.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 
 #include "utils/thread_pool/thread_pool.h"
 #include "torrent/torrent.h"
 
 
-void task1(){
-    printf("Thread #%u working on task1\n", (int)pthread_self());
+void task1(void * arg){
+    int argument = (int *)arg;
+    printf("#%d working on task1\n", argument);
 }
 
-void task2(){
-    printf("Thread #%u working on task2\n", (int)pthread_self());
+void task2(void * arg){
+    int argument = (int *)arg;
+    printf("#%d working on task2\n", argument);
 }
 
-int main(int argc, char *argv[])
-{
-    puts("Making threadpool with 4 threads");
-    Thread_Pool *thread_pool = NULL;
-    thread_pool = NEW(Thread_Pool, 4);
+Thread_Pool *thread_pool = NULL;
+int running = 1;
 
-    puts("Adding 40 tasks to threadpool");
+// catch ctrl-c
+void cleanup() {
+    running = 0;
+}
+
+int threadpool() {
+    signal(SIGINT, cleanup);
+    
+    debug("Making threadpool with 4 threads");
+    thread_pool = NEW(Thread_Pool, 100);
+    check_mem(thread_pool);
+    
+    debug("Adding 50 tasks to threadpool");
     int i;
-    for (i=0; i<20; i++){
-        Job * job1 = NEW(Job, (void*)task1, NULL);
-        Job * job2 = NEW(Job, (void*)task2, NULL);
+    for (i=0; i<25; i++){
+        Job * job1 = NEW(Job, (void*)task1, (void *)2);
+        Job * job2 = NEW(Job, (void*)task2, (void *)10);
 
         thread_pool->add_job(thread_pool, job1);
         thread_pool->add_job(thread_pool, job2);
@@ -38,11 +50,18 @@ int main(int argc, char *argv[])
         job2->destroy(job2);
     };
     
-    
+    while(running){
+        
+    }
 
-    puts("Killing threadpool");
-    thread_pool->destroy(thread_pool);
+    if(thread_pool) { thread_pool->destroy(thread_pool); };
+error:
+     return EXIT_FAILURE;
+}
 
+int main(int argc, char *argv[])
+{
+    return threadpool();
 //     Torrent *torrent = NULL;
 //     /* verify user has provided a torrent to parse */
 //     assert(argc == 2, "provide a torrent to download");

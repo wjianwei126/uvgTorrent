@@ -31,7 +31,7 @@ error:
 
 int Tracker_Connect_Request_init(Tracker_Connect_Request *this, int32_t transaction_id)
 {
-	size_t length = 16;
+	// size_t length = 16;
 
 	/* store packet data in struct for easy debugging */
 	int64_t connection_id = net_utils.htonll(0x41727101980);

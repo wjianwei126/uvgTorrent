@@ -47,7 +47,8 @@ error:
 */
 int Linkednode_init(Linkednode *this, const void * value, size_t value_size)
 {
-	this->value = NULL;
+    this->value = NULL;
+    this->next = NULL;
 	this->size = 0;
 
 	return this->set(this, value, value_size);
@@ -63,7 +64,7 @@ void Linkednode_destroy(Linkednode *this){
 
 void Linkednode_print(Linkednode *this)
 {
-
+    debug("Linkednode");
 }
 
 /**

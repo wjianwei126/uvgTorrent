@@ -18,13 +18,13 @@ struct Thread_Pool {
     void (*process_next_job)(Thread_Pool *this);
    	
     Linkedlist * threads;
+    pthread_mutex_t jobs_mutex;
     Linkedlist * jobs;
 
     int max_threads;
     volatile int thread_count;
     volatile int working_threads;
     volatile int current_job;
-	pthread_mutex_t thread_count_lock;
 };
 
 Thread_Pool *Thread_Pool_new(size_t size, const int max_threads);

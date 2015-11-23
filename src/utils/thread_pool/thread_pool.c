@@ -38,6 +38,12 @@ int Thread_Pool_init(Thread_Pool *this, const int max_threads)
 	this->threads = NEW(Linkedlist);
     check_mem(this->threads);
 
+
+    // pthread_mutexattr_t pthread_attr;
+    // pthread_mutexattr_init(&pthread_attr);
+    // pthread_mutexattr_settype(&pthread_attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&(this->jobs_mutex), NULL);
+
     this->jobs = NEW(Linkedlist);
     check_mem(this->jobs);
 
@@ -49,7 +55,7 @@ int Thread_Pool_init(Thread_Pool *this, const int max_threads)
     	/**
 		* add a new thread for use
 		*/
-		Thread * current_thread = NEW(Thread, this->thread_count, this->jobs);
+		Thread * current_thread = NEW(Thread, this->thread_count, this->jobs, &this->jobs_mutex);
 		check_mem(current_thread);
 
 		this->threads->append(this->threads, (void *)current_thread, sizeof(Thread));
@@ -70,24 +76,30 @@ error:
 void Thread_Pool_destroy(Thread_Pool *this)
 {
 	if(this){
-		Linkednode * curr = this->jobs->head;        
+        Linkednode * curr = this->threads->head;    
         while(curr){
-            Job * job = (Job *)curr->get(curr);
-            job->destroy(job);
-            curr->value = NULL;
-            curr = curr->next;
-        }
-		if(this->jobs) { this->jobs->destroy(this->jobs); };
-		
-		curr = this->threads->head;    
-        while(curr){   
             Thread * thread = (Thread *)curr->get(curr);
             thread->destroy(thread);
             curr->value = NULL;
             curr = curr->next;
         }
-		if(this->threads) { this->threads->destroy(this->threads); };
+        if(this->threads) { this->threads->destroy(this->threads); };
 
+        pthread_mutex_lock(&this->jobs_mutex);
+		curr = this->jobs->head;        
+        while(curr){
+            Job * job = (Job *)curr->get(curr);
+            if(job){
+                job->destroy(job);
+                curr->value = NULL;
+            }
+            curr = curr->next;
+        }
+		if(this->jobs) { this->jobs->destroy(this->jobs); };
+        pthread_mutex_unlock(&this->jobs_mutex);
+		
+        pthread_mutex_destroy(&this->jobs_mutex);
+        
         free(this);
 	}
 }
@@ -99,7 +111,9 @@ void Thread_Pool_add_job(Thread_Pool *this, Job *job)
 	* or use an old thread
 	*/
 
+    pthread_mutex_lock(&this->jobs_mutex);
 	this->jobs->append(this->jobs, (void *)job, sizeof(Job));
+    pthread_mutex_unlock(&this->jobs_mutex);
 }
 
 void Thread_Pool_print(Thread_Pool *this)
