@@ -74,11 +74,10 @@ void * Thread_run(void *this)
         Linkednode * node = NULL;
         
         pthread_mutex_lock(thread->mutex);
-        //if(thread->jobs->count != 0){
             node = thread->jobs->pop(thread->jobs);
-        //}
         pthread_mutex_unlock(thread->mutex);
 
+       #include <signal.h>
         if(node){
             Job * job = (Job *) node->get(node);
             job->function(job->arg);
@@ -89,7 +88,7 @@ void * Thread_run(void *this)
             node->destroy(node);
         }
     }
-    
+
     return (void *) NULL;
 }
 
