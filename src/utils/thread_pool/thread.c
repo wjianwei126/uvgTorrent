@@ -1,3 +1,4 @@
+#include "macro/macro.h"
 #include "debug/debug.h"
 #include <errno.h>
 #include <stdio.h>

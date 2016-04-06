@@ -1,5 +1,5 @@
 /* MACRO DEFINITIONS */
-#define _POSIX_C_SOURCE 1
+#define _POSIX_C_SOURCE 200809L
 
 /* GLOBAL NEW MACRO 
 *  initializes a struct based on convention: 
