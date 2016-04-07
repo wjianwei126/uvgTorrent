@@ -7,7 +7,16 @@ OBJECTS=
 default:
 	make clean
 	make build
-	make test
+
+test:
+	make clean
+	make build
+	make valgrind
+
+run:
+	make clean
+	make build
+	./bin/$(TARGET) torrents/test.magnet
 
 helgrind:
 	make clean
@@ -20,7 +29,7 @@ clean:
 build:
 	$(CC) $(INCLUDE) $(OBJECTS) $(FLAGS) -o bin/$(TARGET) $(wildcard src/*.c) $(wildcard src/*/*.c) $(wildcard src/*/*/*.c) $(wildcard src/*/*/*/*.c) -lpthread
 
-test:
+valgrind:
 	valgrind --leak-check=full --track-origins=yes ./bin/$(TARGET) torrents/test.magnet
 
 helgrind_test:
