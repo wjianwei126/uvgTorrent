@@ -46,15 +46,19 @@ error:
 
 int Hashmap_init(Hashmap *this)
 {
+    for (int i = 0; i < _MAX_HASHTABLE_KEYS; i++) {
+        this->buckets[i] = NULL;
+    }
     return EXIT_SUCCESS;
 }
 
 void Hashmap_destroy(Hashmap * this)
 {
-    
     if(this) {
-        for(int i = 0; i < this->bucket_count; i++){
-            this->buckets[i]->destroy(this->buckets[i]);
+        for(int i = 0; i < _MAX_HASHTABLE_KEYS; i++){
+            if(this->buckets[i] != NULL) {
+                this->buckets[i]->destroy(this->buckets[i]);
+            }
         }
        	free(this);
     }
@@ -94,25 +98,11 @@ int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_
     
     uint32_t hash = this->get_hash(key, strlen(key));
     int bucket_index = hash % _MAX_HASHTABLE_KEYS;
-    bucket_index++;
-    int exists = 0;
-    int i;
 
-    /* 
-        needs to be optimized. considering a trie so lookup time
-        is stable at hash length and independent of number of keys
-    */
-    for(i = 0; i < this->bucket_count; i++){
-        if(this->buckets[i]->hash == hash){
-            exists = 1;
-            break;
-        }
-    }
-
-    if (exists) {
-        this->buckets[i]->set(this->buckets[i], key, value, value_size);
+    if (this->buckets[bucket_index] != NULL) {
+        this->buckets[bucket_index]->set(this->buckets[bucket_index], key, value, value_size);
     } else {
-        this->buckets[this->bucket_count] = NEW(Bucket, key, value, value_size, hash);
+        this->buckets[bucket_index] = NEW(Bucket, key, value, value_size);
         this->bucket_count++;
     }
 
@@ -135,25 +125,11 @@ error:
 */
 const void * Hashmap_get(Hashmap *this, const char *key) {
     assert(key, "Hashmap :: provide key");
-
     uint32_t hash = this->get_hash(key, strlen(key));
+    int bucket_index = hash % _MAX_HASHTABLE_KEYS;
 
-    int exists = 0;
-    int i = 0;
-
-    /* 
-        needs to be optimized. considering a trie so lookup time
-        is stable at hash length and independent of number of keys
-    */
-    for(i = 0; i < this->bucket_count; i++){
-        if(this->buckets[i]->hash == hash){
-            exists = 1;
-            break;
-        }
-    }
-
-    if(exists){
-        return this->buckets[i]->get(this->buckets[i]);
+    if(this->buckets[bucket_index] != NULL){
+        return this->buckets[bucket_index]->get(this->buckets[bucket_index], key);
     } else {
         return NULL;
     }

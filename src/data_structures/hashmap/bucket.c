@@ -8,7 +8,7 @@
 #include <setjmp.h>
 #include "data_structures/hashmap/bucket.h"
 
-Bucket *Bucket_new(size_t size, const char *key, const void *value, size_t value_size, uint32_t hash){
+Bucket *Bucket_new(size_t size, const char *key, const void *value, size_t value_size){
     Bucket *bucket = malloc(size);
     check_mem(bucket);
 
@@ -19,7 +19,7 @@ Bucket *Bucket_new(size_t size, const char *key, const void *value, size_t value
     bucket->get = Bucket_get;
     bucket->set = Bucket_set;
 
-    if(bucket->init(bucket, key, value, value_size, hash) == EXIT_FAILURE) {
+    if(bucket->init(bucket, key, value, value_size) == EXIT_FAILURE) {
         throw("bucket init failed");
     } else {
         // all done, we made an object of any type
@@ -50,10 +50,10 @@ error:
 *            anyone who wants to manipulate a value retreived from a bucket should 
 *            copy the object and make sure to clean up their manipulated object
 */
-int Bucket_init(Bucket *this, const char *key, const void *value, size_t value_size, uint32_t hash){
+int Bucket_init(Bucket *this, const char *key, const void *value, size_t value_size){
     this->key = NULL;
     this->value = NULL;
-    this->hash = hash;
+    this->next = NULL;
 
     return this->set(this, key, value, value_size);
 };
@@ -62,6 +62,10 @@ void Bucket_destroy(Bucket *this){
     if(this) {
         if(this->key) { free(this->key); };
         if(this->value) { free(this->value); };
+        if(this->next) { 
+            this->next->destroy(this->next);
+            free(this->next); 
+        };
         free(this);
     }
 };
@@ -73,7 +77,6 @@ void Bucket_destroy(Bucket *this){
 */
 void Bucket_print(Bucket *this){
     debug("bucket key :: %s", this->key);
-    debug("bucket hash :: %u", this->hash);
 };
 
 /**
@@ -95,21 +98,27 @@ void Bucket_print(Bucket *this){
 *
 */
 int Bucket_set(Bucket *this, const char *key, const void *value, size_t value_size){
-    if(this->key != NULL) { free(this->key); }
-    if(this->value != NULL) { free(this->value); }
+    if(this->key != NULL) { 
+        if(this->next != NULL) {
+            return this->next->set(this->next, key, value, value_size);
+        } else {
+            this->next = NEW(Bucket, key, value, value_size);
+            return EXIT_SUCCESS;
+        }
+    } else {
+        this->key = NULL;
+        this->value = NULL;
 
-    this->key = NULL;
-    this->value = NULL;
+        this->key = malloc(strlen(key) + 1);
+        check_mem(this->key);
+        strcpy(this->key, key);
 
-    this->key = malloc(strlen(key) + 1);
-    check_mem(this->key);
-    strcpy(this->key, key);
+        this->value = calloc(1, value_size + 1);
+        check_mem(this->value);
+        memcpy(this->value, value, value_size);
 
-    this->value = calloc(1, value_size + 1);
-    check_mem(this->value);
-    memcpy(this->value, value, value_size);
-
-    return EXIT_SUCCESS;
+        return EXIT_SUCCESS;
+    }
 
 error:
    return EXIT_FAILURE;
@@ -125,6 +134,12 @@ error:
 * NOTES   :  later on buckets with the same hash but different keys will be chained in a 
 *         :  linked list
 */
-const void * Bucket_get(Bucket *this){
-    return this->value;
+const void * Bucket_get(Bucket *this, const char *key){
+    if(strcmp(this->key, key) == 0){
+        return this->value;
+    } else if (this->next != NULL){
+        return this->next->get(this,key);
+    } else {
+        return NULL;
+    }
 };
