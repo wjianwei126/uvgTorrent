@@ -93,7 +93,8 @@ int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_
     assert(this->bucket_count < _MAX_HASHTABLE_KEYS, "Hashmap :: out of space");
     
     uint32_t hash = this->get_hash(key, strlen(key));
-    
+    int bucket_index = hash % _MAX_HASHTABLE_KEYS;
+    bucket_index++;
     int exists = 0;
     int i;
 
