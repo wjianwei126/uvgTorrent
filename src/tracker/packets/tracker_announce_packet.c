@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "utils/net/net_utils.h"
+#include "peer/peer.h"
 #include "tracker/packets/tracker_announce_packet.h"
 
 /* CONNECT REQUEST */
@@ -181,16 +182,20 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
     while ( peer_position < last_peer_position ) {
         // loop through peers until end of response from tracker
         struct in_addr * peer_ip = (struct in_addr *) &raw_response[pos] + peer_position;
-        // uint16_t port = net_utils.ntohs(*(uint16_t *)&raw_response[pos] + peer_position + sizeof(int32_t));
+        uint16_t port = net_utils.ntohs(*(uint16_t *)&raw_response[pos] + peer_position + sizeof(int32_t));
         char * ip = inet_ntoa(*peer_ip);
 
         if(strcmp(ip,"0.0.0.0") == 0){
             break;
         }
 
+        Peer * peer = NEW(Peer, ip, port);
+
         //debug("peer :: %s:%" PRId16, ip, port);
         peer_position += sizeof(int32_t) + sizeof(uint16_t);
-        this->peers->append(this->peers, ip, strlen(ip));
+        this->peers->append(this->peers, peer, sizeof(Peer));
+
+        free(peer);
     }
 
 
@@ -203,7 +208,18 @@ error:
 void Tracker_Announce_Response_destroy(Tracker_Announce_Response *this)
 {
 	if(this) { 
-		if(this->peers) { this->peers->destroy(this->peers); };
+		if(this->peers) { 
+
+			Linkednode * curr = this->peers->head;        
+            while(curr){
+            	Peer * peer = (Peer *)curr->get(curr);
+	            peer->destroy(peer);
+	            curr->value = NULL;
+	            curr = curr->next;
+            }
+
+			this->peers->destroy(this->peers); 
+		};
 		free(this); 
 	};
 }

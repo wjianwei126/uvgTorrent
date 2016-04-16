@@ -17,6 +17,7 @@
 #include "utils/rand/rand_utils.h"
 #include "utils/sock/udp_socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
+#include "peer/peer.h"
 #include "tracker/tracker.h"
 #include "torrent/torrent.h"
 #include "tracker/packets/tracker_connect_packet.h"
@@ -249,8 +250,9 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             
             Linkednode * curr = announce_req->response->peers->head;        
             while(curr){
-                char * ip = (char *)curr->value;
-                debug("peer :: %s", ip);
+                Peer * peer = (Peer *)curr->value;
+                peer->handshake(peer);
+                //debug("peer :: %s", ip);
                 curr = curr->next;
             }
 
