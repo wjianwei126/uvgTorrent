@@ -15,7 +15,7 @@
 #include "utils/str/string_utils.h"
 #include "utils/net/net_utils.h"
 #include "utils/rand/rand_utils.h"
-#include "utils/sock/udp_socket.h"
+#include "utils/sock/socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "peer/peer.h"
 #include "tracker/tracker.h"
@@ -135,7 +135,7 @@ int Tracker_connect(Tracker *this)
     
     if(this->tracker_socket == NULL) {
         /* set up our tracker socket connection */
-        this->tracker_socket = NEW(UDP_Socket, this->ip, atoi(this->port));
+        this->tracker_socket = NEW(Socket, this->ip, atoi(this->port), SOCKET_TYPE_UDP);
         check_mem(this->tracker_socket);
     }
     Tracker_Connect_Packet * connect_req = NULL;

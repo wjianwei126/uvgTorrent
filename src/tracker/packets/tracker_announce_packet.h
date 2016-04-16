@@ -2,7 +2,7 @@
 #define _Tracker_Announce_packet_h
 
 #include "macro/macro.h"
-#include "utils/sock/udp_socket.h"
+#include "utils/sock/socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 
 /* TRACKER CONNECT REQUEST */
@@ -69,8 +69,8 @@ struct Tracker_Announce_Packet {
     void (*print) (Tracker_Announce_Packet *this);
     void (*destroy) (Tracker_Announce_Packet *this);
 
-	int (*send) (Tracker_Announce_Packet *this, UDP_Socket * socket);
-	int (*receive) (Tracker_Announce_Packet *this, UDP_Socket * socket);
+	int (*send) (Tracker_Announce_Packet *this, Socket * socket);
+	int (*receive) (Tracker_Announce_Packet *this, Socket * socket);
 
 	Tracker_Announce_Request * request;
 	Tracker_Announce_Response * response;
@@ -81,6 +81,6 @@ int Tracker_Announce_Packet_init (Tracker_Announce_Packet *this, int64_t connect
 void Tracker_Announce_Packet_destroy (Tracker_Announce_Packet *this);
 void Tracker_Announce_Packet_print (Tracker_Announce_Packet *this);
 
-int Tracker_Announce_Packet_send (Tracker_Announce_Packet *this, UDP_Socket * socket);
-int Tracker_Announce_Packet_receive (Tracker_Announce_Packet *this, UDP_Socket * socket);
+int Tracker_Announce_Packet_send (Tracker_Announce_Packet *this, Socket * socket);
+int Tracker_Announce_Packet_receive (Tracker_Announce_Packet *this, Socket * socket);
 #endif

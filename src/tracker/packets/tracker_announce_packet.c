@@ -282,12 +282,12 @@ void Tracker_Announce_Packet_print (Tracker_Announce_Packet *this)
 
 }
 
-int Tracker_Announce_Packet_send (Tracker_Announce_Packet *this, UDP_Socket * socket)
+int Tracker_Announce_Packet_send (Tracker_Announce_Packet *this, Socket * socket)
 {
 	return socket->send(socket, &this->request->bytes, sizeof(this->request->bytes));
 }
 
-int Tracker_Announce_Packet_receive (Tracker_Announce_Packet *this, UDP_Socket * socket)
+int Tracker_Announce_Packet_receive (Tracker_Announce_Packet *this, Socket * socket)
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);

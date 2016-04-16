@@ -10,50 +10,51 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <netdb.h>
-#include "utils/sock/udp_socket.h"
+#include "utils/sock/socket.h"
 #include "utils/str/string_utils.h"
 
-UDP_Socket *UDP_Socket_new(size_t size, char *ip, int port)
+Socket *Socket_new(size_t size, char *ip, int port, SOCKET_TYPE type)
 {
-	UDP_Socket *udp_sock = malloc(size);
-    check_mem(udp_sock);
+	Socket *sock = malloc(size);
+    check_mem(sock);
 
-    udp_sock->init = UDP_Socket_init;
-    udp_sock->destroy = UDP_Socket_destroy;
-    udp_sock->print= UDP_Socket_print;
+    sock->init = Socket_init;
+    sock->destroy = Socket_destroy;
+    sock->print= Socket_print;
 
-    udp_sock->connect = UDP_Socket_connect;
-    udp_sock->send = UDP_Socket_send;
-    udp_sock->receive = UDP_Socket_receive;
-    if(udp_sock->init(udp_sock, ip, port) == EXIT_FAILURE) {
-        throw("udp socket init failed");
+    sock->connect = Socket_connect;
+    sock->send = Socket_send;
+    sock->receive = Socket_receive;
+    if(sock->init(sock, ip, port, type) == EXIT_FAILURE) {
+        throw("socket init failed");
     } else {
         // all done, we made an object of any type
-        return udp_sock;
+        return sock;
     }
 
 error:
-    if(udp_sock) { udp_sock->destroy(udp_sock); };
+    if(sock) { sock->destroy(sock); };
     return NULL;
 }
 
 /**
-* int UDP_Socket_init(UDP_Socket *this, char *ip, int port)
+* int Socket_init(Socket *this, char *ip, int port)
 *
-* UDP_Socket    *this; instance to initialize
+* Socket    *this; instance to initialize
 * char          *ip; remote ip 
 * int           *port; remote port 
 * 
 * PURPOSE : set up a new socket connection
 * RETURN  : success bool
 */
-int UDP_Socket_init(UDP_Socket *this, char *ip, int port)
+int Socket_init(Socket *this, char *ip, int port, SOCKET_TYPE type)
 {
 	this->ip = NULL;
     this->port = 0;
     this->localport = 0;
 	this->sock_desc = 0;
     this->remote_addr_len = 0;
+    this->type = type;
     this->remote_addr = NULL;
     this->local_addr = NULL;
 
@@ -71,7 +72,7 @@ error:
 	return EXIT_FAILURE;
 }
 
-void UDP_Socket_destroy(UDP_Socket *this)
+void Socket_destroy(Socket *this)
 {
 	if(this){
         if(this->sock_desc){
@@ -86,20 +87,20 @@ void UDP_Socket_destroy(UDP_Socket *this)
 	}
 }
 
-void UDP_Socket_print(UDP_Socket *this)
+void Socket_print(Socket *this)
 {
 
 }
 
 /**
-* int UDP_Socket_connect(UDP_Socket *this)
+* int Socket_connect(Socket *this)
 *
-* UDP_Socket    *this; instance to initialize
+* Socket    *this; instance to initialize
 * 
 * PURPOSE : bind, name and connect a new socket
 * RETURN  : success bool
 */
-int UDP_Socket_connect(UDP_Socket *this)
+int Socket_connect(Socket *this)
 {
 	/* local address */
     this->local_addr = (this->local_addr == NULL) ? malloc(sizeof(struct sockaddr_in)) : this->local_addr; 
@@ -111,10 +112,17 @@ int UDP_Socket_connect(UDP_Socket *this)
     int fd;
     unsigned int addrlen;
 
-    // create local socket
-	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        throw(KRED "✗ \ncan't create socket");
-        return 0;
+    // create UDP socket
+    if(this->type == SOCKET_TYPE_UDP){
+        if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+            throw(KRED "✗ \ncan't create socket");
+            return 0;
+        }   
+    } else if(this->type == SOCKET_TYPE_TCP) {
+        if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+            throw(KRED "✗ \ncan't create socket");
+            return 0;
+        }   
     }
 
     struct timeval timeout;
@@ -162,15 +170,15 @@ error:
 }
 
 /**
-* int UDP_Socket_receive(UDP_Socket *this, void * output)
+* int Socket_receive(Socket *this, void * output)
 *
-* UDP_Socket    *this; instance to initialize
+* Socket    *this; instance to initialize
 * void          *output; output pointer
 * 
 * PURPOSE : copy socket response into output
 * RETURN  : success bool
 */
-ssize_t UDP_Socket_receive(UDP_Socket *this, char buffer[2048])
+ssize_t Socket_receive(Socket *this, char buffer[2048])
 {
     int fd = *this->sock_desc;
     struct sockaddr_storage src_addr;
@@ -189,16 +197,16 @@ ssize_t UDP_Socket_receive(UDP_Socket *this, char buffer[2048])
 }
 
 /**
-* int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size)
+* int Socket_send(Socket *this, void * message, size_t message_size)
 *
-* UDP_Socket    *this; instance to initialize
+* Socket    *this; instance to initialize
 * void          *message; packet to send (packed struct)
 * size_t        message_size; size of the package
 * 
 * PURPOSE : send a packet (packed struct) to remote server
 * RETURN  : success bool
 */
-int UDP_Socket_send(UDP_Socket *this, void * message, size_t message_size)
+int Socket_send(Socket *this, void * message, size_t message_size)
 {
     if (sendto(*this->sock_desc, message, message_size, 0, (const struct sockaddr *)this->remote_addr, sizeof(*this->remote_addr))==-1){
         throw("send failed");

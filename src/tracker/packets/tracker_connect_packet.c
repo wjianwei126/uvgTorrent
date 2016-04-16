@@ -169,12 +169,12 @@ void Tracker_Connect_Packet_print (Tracker_Connect_Packet *this)
 
 }
 
-int Tracker_Connect_Packet_send (Tracker_Connect_Packet *this, UDP_Socket * socket)
+int Tracker_Connect_Packet_send (Tracker_Connect_Packet *this, Socket * socket)
 {
 	return socket->send(socket, &this->request->bytes, sizeof(this->request->bytes));
 }
 
-int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, UDP_Socket * socket)
+int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, Socket * socket)
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);

@@ -2,7 +2,7 @@
 #define _tracker_connect_packet_h
 
 #include "macro/macro.h"
-#include "utils/sock/udp_socket.h"
+#include "utils/sock/socket.h"
 
 /* TRACKER CONNECT REQUEST */
 typedef struct Tracker_Connect_Request Tracker_Connect_Request;
@@ -46,8 +46,8 @@ struct Tracker_Connect_Packet {
     void (*print) (Tracker_Connect_Packet *this);
     void (*destroy) (Tracker_Connect_Packet *this);
 
-	int (*send) (Tracker_Connect_Packet *this, UDP_Socket * socket);
-	int (*receive) (Tracker_Connect_Packet *this, UDP_Socket * socket);
+	int (*send) (Tracker_Connect_Packet *this, Socket * socket);
+	int (*receive) (Tracker_Connect_Packet *this, Socket * socket);
 
 	Tracker_Connect_Request * request;
 	Tracker_Connect_Response * response;
@@ -58,6 +58,6 @@ int Tracker_Connect_Packet_init (Tracker_Connect_Packet *this, int32_t transacti
 void Tracker_Connect_Packet_destroy (Tracker_Connect_Packet *this);
 void Tracker_Connect_Packet_print (Tracker_Connect_Packet *this);
 
-int Tracker_Connect_Packet_send (Tracker_Connect_Packet *this, UDP_Socket * socket);
-int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, UDP_Socket * socket);
+int Tracker_Connect_Packet_send (Tracker_Connect_Packet *this, Socket * socket);
+int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, Socket * socket);
 #endif

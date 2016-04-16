@@ -2,7 +2,7 @@
 #define _tracker_h
 
 #include "macro/macro.h"
-#include "utils/sock/udp_socket.h"
+#include "utils/sock/socket.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "torrent/torrent.h"
 
@@ -28,7 +28,7 @@ struct Tracker {
     int leechers;
     int interval;
     
-    UDP_Socket * tracker_socket;
+    Socket * tracker_socket;
 };
 
 /* basic functions */
