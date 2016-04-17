@@ -10,7 +10,7 @@ struct Peer {
     void (*print)(Peer *this);
     void (*destroy)(Peer *this);
     
-    void (*handshake)(Peer *this);
+    int (*handshake)(Peer *this, char * info_hash);
 
     char * ip;
     uint16_t port;
@@ -26,6 +26,6 @@ int Peer_init(Peer *this, char *ip, uint16_t port);
 void Peer_destroy(Peer *this);
 void Peer_print(Peer *this);
 
-void Peer_handshake(Peer *this);
+int Peer_handshake(Peer *this, char * info_hash);
 
 #endif

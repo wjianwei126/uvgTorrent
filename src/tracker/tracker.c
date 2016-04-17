@@ -251,8 +251,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             Linkednode * curr = announce_req->response->peers->head;        
             while(curr){
                 Peer * peer = (Peer *)curr->value;
-                peer->handshake(peer);
-                //debug("peer :: %s", ip);
+                int res = peer->handshake(peer, info_hash);
                 curr = curr->next;
             }
 

@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include "utils/sock/socket.h"
 #include "peer/peer.h"
+#include "peer/packets/peer_handshake_packet.h"
 
 Peer *Peer_new(size_t size, char *ip, uint16_t port)
 {
@@ -78,6 +80,38 @@ void Peer_print(Peer *this){
 *
 * PURPOSE : print a Peer struct
 */
-void Peer_handshake(Peer *this){
-    this->print(this);	
+int Peer_handshake(Peer *this, char * info_hash){
+    log_confirm("Attempting Handhsake :: %s:%u", this->ip, this->port);
+    Socket * socket = NEW(Socket, this->ip, this->port, SOCKET_TYPE_UDP);
+    check_mem(socket);
+
+    Peer_Handshake_Packet * handshake = NULL;
+
+    int result = socket->connect(socket);
+    if(result == EXIT_SUCCESS){
+    	handshake = NEW(Peer_Handshake_Packet, info_hash, "UVG01234567891234567");
+    	handshake->send(handshake, socket);
+
+    	int result = handshake->receive(handshake, socket);
+
+	    if(result == EXIT_SUCCESS){
+    		fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+	    } else {
+            fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+        }
+
+	    handshake->destroy(handshake);
+
+    } else {
+        socket->destroy(socket);
+    	goto error;
+    }
+    socket->destroy(socket);
+	
+	return EXIT_SUCCESS;
+
+error:
+	if(handshake) { handshake->destroy(handshake); };
+    fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+	return EXIT_FAILURE;
 }
