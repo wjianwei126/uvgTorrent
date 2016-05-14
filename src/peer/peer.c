@@ -82,7 +82,7 @@ void Peer_print(Peer *this){
 */
 int Peer_handshake(Peer *this, char * info_hash){
     log_confirm("Attempting Handhsake :: %s:%u", this->ip, this->port);
-    Socket * socket = NEW(Socket, this->ip, this->port, SOCKET_TYPE_UDP);
+    Socket * socket = NEW(Socket, this->ip, this->port, SOCKET_TYPE_TCP);
     check_mem(socket);
 
     Peer_Handshake_Packet * handshake = NULL;

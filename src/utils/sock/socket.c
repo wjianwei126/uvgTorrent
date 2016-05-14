@@ -137,15 +137,6 @@ int Socket_connect(Socket *this)
     localaddr.sin_family = AF_INET;
     localaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     localaddr.sin_port = htons(0);
-    if (bind(fd, (struct sockaddr *)&localaddr, sizeof(localaddr)) < 0) {
-        throw("bind failed");
-    }
-
-    // name local socket
-    addrlen = sizeof(localaddr);
-    if (getsockname(fd, (struct sockaddr *)&localaddr, &addrlen) < 0) {
-        throw("getsockname failed");
-    }
 
     // get remote location
     memset((char *) &remaddr, 0, sizeof(remaddr));
@@ -153,6 +144,22 @@ int Socket_connect(Socket *this)
     remaddr.sin_port = htons((int)*this->port);
     if (inet_aton(this->ip, &remaddr.sin_addr)==0) {
         throw("inet_aton() failed\n");
+    }
+
+    if(this->type == SOCKET_TYPE_UDP){
+        if (bind(fd, (struct sockaddr *)&localaddr, sizeof(localaddr)) < 0) {
+            throw("bind failed");
+        }
+
+        // name local socket
+        addrlen = sizeof(localaddr);
+        if (getsockname(fd, (struct sockaddr *)&localaddr, &addrlen) < 0) {
+            throw("getsockname failed");
+        }
+    } else if(this->type == SOCKET_TYPE_TCP) {
+        if (connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr)) < 0) {
+            throw("connect failed. Error");
+        }
     }
 
     memcpy((void *)this->local_addr, &localaddr, sizeof(localaddr));

@@ -35,7 +35,7 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 
 	/* store packet data in struct for easy debugging */
 	int8_t pstrlen = net_utils.htonl(19);
-	char * pstr = "BitTorrent protocol\0";
+	char * pstr = "BitTorrent protocol";
 	info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
 
 	int8_t info_hash_bytes[20];
@@ -58,14 +58,14 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 	memcpy(&this->bytes[pos], &pstr, strlen(pstr) * sizeof(int8_t));
 	pos += strlen(pstr) * sizeof(int8_t);
 
-	this->bytes[pos] = 0;
-	this->bytes[pos+1] = 0;
-	this->bytes[pos+2] = 0;
-	this->bytes[pos+3] = 0;
-	this->bytes[pos+4] = 0;
-	this->bytes[pos+5] = 0;
-	this->bytes[pos+6] = 0;
-	this->bytes[pos+7] = 0;
+	this->bytes[pos] = '\x00';
+	this->bytes[pos+1] = '\x00';
+	this->bytes[pos+2] = '\x00';
+	this->bytes[pos+3] = '\x00';
+	this->bytes[pos+4] = '\x00';
+	this->bytes[pos+5] = '\x00';
+	this->bytes[pos+6] = '\x00';
+	this->bytes[pos+7] = '\x00';
 	pos += 8;
 
 	memcpy(&this->bytes[pos], &info_hash_bytes, 20 * sizeof(int8_t));
