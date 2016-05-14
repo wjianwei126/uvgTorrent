@@ -127,10 +127,15 @@ int Socket_connect(Socket *this)
 
     struct timeval timeout;
 
-    timeout.tv_sec = 2;  /* 30 Secs Timeout */
+    if(this->type == SOCKET_TYPE_UDP){
+        timeout.tv_sec = 1;  /* 30 Secs Timeout */
+    } else if(this->type == SOCKET_TYPE_TCP) {
+        timeout.tv_sec = 3;
+    } 
     timeout.tv_usec = 0;
 
-    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,sizeof(struct timeval));
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
 
     // bind local socket
     memset((void *)&localaddr, 0, sizeof(localaddr));
@@ -157,8 +162,22 @@ int Socket_connect(Socket *this)
             throw("getsockname failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
+        fd_set fds;
+
+        FD_ZERO(&fds);
+        FD_SET(fd, &fds);
+
         if (connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr)) < 0) {
-            throw("connect failed. Error");
+            if (errno != EINPROGRESS) {
+                return EXIT_FAILURE;
+                // throw("connect failed. Error");
+            }
+        }
+        int error = select(fd, NULL, &fds, NULL, &timeout);
+        if(error == 0){
+            if (FD_ISSET(fd, &fds)) {
+              //FD_CLR(0, &fds);
+            }
         }
     }
 
@@ -191,16 +210,35 @@ ssize_t Socket_receive(Socket *this, char buffer[2048])
     struct sockaddr_storage src_addr;
 
     socklen_t src_addr_len=sizeof(src_addr);
-    ssize_t count=recvfrom(fd,buffer,2048,0,(struct sockaddr*)&src_addr,&src_addr_len);
-    if (count==2048) {
-        log_warn("datagram too large for buffer: truncated");
-    } else {
-        if (count == -1) {
-            return count;
+
+    if(this->type == SOCKET_TYPE_UDP){
+        ssize_t count=recvfrom(fd,buffer,2048,0,(struct sockaddr*)&src_addr,&src_addr_len);
+        if (count==2048) {
+            log_warn("datagram too large for buffer: truncated");
+        } else {
+            if (count == -1) {
+                return count;
+            }
         }
+
+        return count;
+    } else if(this->type == SOCKET_TYPE_TCP) {
+        ssize_t count=recv(fd,buffer,2048,0);
+        if (count==2048) {
+            log_warn("datagram too large for buffer: truncated");
+        } else {
+            if (count == -1) {
+                return count;
+            }
+        }
+
+        return count;
     }
 
-    return count;
+    throw("invalid socket type");
+    
+error:
+    return -1;
 }
 
 /**
@@ -215,9 +253,16 @@ ssize_t Socket_receive(Socket *this, char buffer[2048])
 */
 int Socket_send(Socket *this, void * message, size_t message_size)
 {
-    if (sendto(*this->sock_desc, message, message_size, 0, (const struct sockaddr *)this->remote_addr, sizeof(*this->remote_addr))==-1){
-        throw("send failed");
+    if(this->type == SOCKET_TYPE_UDP){
+        if (sendto(*this->sock_desc, message, message_size, 0, (const struct sockaddr *)this->remote_addr, sizeof(*this->remote_addr)) == -1){
+            throw("send failed");
+        }
+    } else if(this->type == SOCKET_TYPE_TCP) {
+        if (send(*this->sock_desc, message, message_size, 0) == -1){
+            throw("send failed");
+        }
     }
+
 
     return EXIT_SUCCESS;
 error:

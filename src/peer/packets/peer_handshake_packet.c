@@ -58,14 +58,14 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 	memcpy(&this->bytes[pos], &pstr, strlen(pstr) * sizeof(int8_t));
 	pos += strlen(pstr) * sizeof(int8_t);
 
-	this->bytes[pos] = '\x00';
-	this->bytes[pos+1] = '\x00';
-	this->bytes[pos+2] = '\x00';
-	this->bytes[pos+3] = '\x00';
-	this->bytes[pos+4] = '\x00';
-	this->bytes[pos+5] = '\x00';
-	this->bytes[pos+6] = '\x00';
-	this->bytes[pos+7] = '\x00';
+	this->bytes[pos] = 0;
+	this->bytes[pos+1] = 0;
+	this->bytes[pos+2] = 0;
+	this->bytes[pos+3] = 0;
+	this->bytes[pos+4] = 0;
+	this->bytes[pos+5] = 0;
+	this->bytes[pos+6] = 0;
+	this->bytes[pos+7] = 0;
 	pos += 8;
 
 	memcpy(&this->bytes[pos], &info_hash_bytes, 20 * sizeof(int8_t));
