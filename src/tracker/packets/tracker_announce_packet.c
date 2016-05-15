@@ -176,23 +176,32 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 	this->peers = NEW(Linkedlist);
     check_mem(this->peers);
     
-    size_t last_peer_position = res_size - 22;
-    size_t peer_position = 0;
+    int last_peer_position = res_size - sizeof(int32_t) - sizeof(int16_t);
+    int peer_position = 0;
+
 
     while ( peer_position < last_peer_position ) {
         // loop through peers until end of response from tracker
-        struct in_addr * peer_ip = (struct in_addr *) &raw_response[pos] + peer_position;
-        uint16_t port = net_utils.ntohs(*(uint16_t *)&raw_response[pos] + peer_position + sizeof(int32_t));
-        char * ip = inet_ntoa(*peer_ip);
+        int32_t int_ip;
+		memcpy(&int_ip,raw_response + pos + peer_position, sizeof(int32_t));
+		int_ip = net_utils.ntohl(int_ip);
 
-        if(strcmp(ip,"0.0.0.0") == 0){
+        int16_t port; //net_utils.ntohs
+        memcpy(&port,raw_response + pos + peer_position + sizeof(int32_t), sizeof(int16_t));
+		port = net_utils.ntohs(port);
+
+        struct in_addr peer_ip;
+    	peer_ip.s_addr = int_ip;
+        char * ip = inet_ntoa(peer_ip);
+
+        if(strcmp(ip,"0.0.0.0") ==	 0){
             break;
         }
 
         Peer * peer = NEW(Peer, ip, port);
 
         //debug("peer :: %s:%" PRId16, ip, port);
-        peer_position += sizeof(int32_t) + sizeof(uint16_t);
+        peer_position += sizeof(int32_t) + sizeof(int16_t);
         this->peers->append(this->peers, peer, sizeof(Peer));
 
         free(peer);

@@ -90,18 +90,20 @@ int Peer_handshake(Peer *this, char * info_hash){
     int result = socket->connect(socket);
     if(result == EXIT_SUCCESS){
     	handshake = NEW(Peer_Handshake_Packet, info_hash, "UVG01234567891234567");
-    	handshake->send(handshake, socket);
+    	if(handshake->send(handshake, socket) > 0){
+            int result = handshake->receive(handshake, socket);
 
-    	int result = handshake->receive(handshake, socket);
+            if(result == EXIT_SUCCESS){
+                fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+            } else {
+                fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+            }
 
-	    if(result == EXIT_SUCCESS){
-    		fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-	    } else {
-            fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+            handshake->destroy(handshake);
+        } else {
+            socket->destroy(socket);
+            goto error;
         }
-
-	    handshake->destroy(handshake);
-
     } else {
         socket->destroy(socket);
     	goto error;

@@ -4,8 +4,8 @@ from random import randrange #to generate random transaction_id
 from urllib import urlopen
 import re
 
-tracker = "open.demonii.com"
-port = 1337
+tracker = "tracker.coppersurfer.tk"
+port = 6969
 torrent_hash = ["9609f0336566953f3bf342241b25e2437f65b2c8"]
 torrent_details = {}
 

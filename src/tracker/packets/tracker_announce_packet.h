@@ -53,6 +53,7 @@ struct Tracker_Announce_Response {
 	int32_t 	transaction_id; /* randomized transaction id */
 	int32_t 	interval; 		/* number of seconds to wait before reannouncing */
 	int32_t 	leechers;		/* number of leechers */
+	int32_t 	completed;		/* number of leechers */
 	int32_t 	seeders;		/* number of seeders */
 	Linkedlist * peers;
 };
