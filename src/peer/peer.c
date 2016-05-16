@@ -81,7 +81,7 @@ void Peer_print(Peer *this){
 * PURPOSE : print a Peer struct
 */
 int Peer_handshake(Peer *this, char * info_hash){
-    log_confirm("Attempting Handhsake :: %s:%u", this->ip, this->port);
+    log_confirm("Attempting Handshake :: %s:%u", this->ip, this->port);
     Socket * socket = NEW(Socket, this->ip, this->port, SOCKET_TYPE_TCP);
     check_mem(socket);
 
@@ -90,8 +90,10 @@ int Peer_handshake(Peer *this, char * info_hash){
     int result = socket->connect(socket);
     if(result == EXIT_SUCCESS){
     	handshake = NEW(Peer_Handshake_Packet, info_hash, "UVG01234567891234567");
-    	if(handshake->send(handshake, socket) > 0){
+    	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
             int result = handshake->receive(handshake, socket);
+            
+            debug("%i", result);
 
             if(result == EXIT_SUCCESS){
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);

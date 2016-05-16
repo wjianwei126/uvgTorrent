@@ -291,9 +291,11 @@ int Socket_send(Socket *this, void * message, size_t message_size)
             throw("send failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
+        debug("presend");
         if (send(*this->sock_desc, message, message_size, 0) == -1){
-            throw("send failed");
+            //throw("send failed");
         }
+        debug("postsend");
     }
 
 

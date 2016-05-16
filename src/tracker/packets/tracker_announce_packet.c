@@ -201,7 +201,7 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
         }
 
         Peer * peer = NEW(Peer, ip, (int) port);
-        
+        //Peer * peer = NEW(Peer, "127.0.0.1", 12321);
         peer_position += peer_size;
         this->peers->append(this->peers, peer, sizeof(Peer));
 
