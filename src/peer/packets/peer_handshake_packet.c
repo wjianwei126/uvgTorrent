@@ -117,7 +117,8 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 {
 	//struct Peer_Handshake_response resp;
 
-	/*size_t pos = 0;
+	size_t pos = 0;
+	/*
 	memcpy(&this->action, &raw_response[pos], sizeof(int32_t));
 	this->action = net_utils.ntohl(this->action);
 	pos += sizeof(int32_t);
@@ -126,8 +127,7 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 	pos += sizeof(int32_t);
 
 	memcpy(&this->connection_id, &raw_response[pos], sizeof(int64_t));
-	this->connection_id = net_utils.ntohll(this->connection_id);
-	pos += sizeof(int64_t);*/
+	this->connection_id = net_utils.n*/
 
 	return EXIT_SUCCESS;
 }
@@ -204,10 +204,11 @@ int Peer_Handshake_Packet_receive (Peer_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);
-
+    debug("packet_size : %zd", packet_size);
     if(packet_size != -1){
     	/* prepare request */
 		this->response = NEW(Peer_Handshake_Response, out, packet_size);
+
 		check_mem(this->response);
 
     	return EXIT_SUCCESS;

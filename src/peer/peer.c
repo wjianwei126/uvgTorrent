@@ -92,8 +92,6 @@ int Peer_handshake(Peer *this, char * info_hash){
     	handshake = NEW(Peer_Handshake_Packet, info_hash, "UVG01234567891234567");
     	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
             int result = handshake->receive(handshake, socket);
-            
-            debug("%i", result);
 
             if(result == EXIT_SUCCESS){
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
