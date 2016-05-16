@@ -9,6 +9,7 @@
 #include <netinet/ip.h> 
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <netdb.h>
 #include "utils/sock/socket.h"
 #include "utils/str/string_utils.h"
@@ -130,7 +131,7 @@ int Socket_connect(Socket *this)
     if(this->type == SOCKET_TYPE_UDP){
         timeout.tv_sec = 1;  /* 30 Secs Timeout */
     } else if(this->type == SOCKET_TYPE_TCP) {
-        timeout.tv_sec = 30;
+        timeout.tv_sec = 5;
     } 
     timeout.tv_usec = 0;
 
@@ -162,23 +163,55 @@ int Socket_connect(Socket *this)
             throw("getsockname failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
-        /*fd_set fds;
+        long arg; 
 
-        FD_ZERO(&fds);
-        FD_SET(fd, &fds);*/
+        if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
+             throw("Error fcntl(..., F_GETFL)"); 
+             exit(0); 
+          } 
+          arg |= O_NONBLOCK;
+          if(fcntl(fd, F_SETFL, arg) < 0) { 
+             throw("Error fcntl(..., F_SETFL)"); 
+          } 
 
-        if (connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr)) < 0) {
-            //if (errno != EINPROGRESS) {
-                //return EXIT_FAILURE;
+        int res = connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr));
+
+        if(res < 0) {
+            if (errno != EINPROGRESS) {
+                return EXIT_FAILURE;
                 throw("connect failed. Error");
-            //}
-        }
-        /*int error = select(fd, NULL, &fds, NULL, &timeout);
-        if(error == 0){
-            if (FD_ISSET(fd, &fds)) {
-              //FD_CLR(0, &fds);
+            } else {
+                fd_set fds;
+
+                FD_ZERO(&fds);
+                FD_SET(fd, &fds);
+                int error = select(fd+1, NULL, &fds, NULL, &timeout);
+                if (error < 0 && errno != EINTR) { 
+                      throw("Error connecting");
+                } else if (error > 0) { 
+                    int valopt;
+                    socklen_t lon = sizeof(int); 
+                    if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
+                        throw("error in getsockopt"); 
+                    } 
+                    // Check the value returned... 
+                    if (valopt) { 
+                        throw("Error in delayed connection"); 
+                    } 
+                }
             }
-        }*/
+        }
+        
+        // Set to blocking mode again... 
+      if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
+             throw("Error fcntl(..., F_GETFL)"); 
+         exit(0); 
+      } 
+      arg &= (~O_NONBLOCK); 
+      if( fcntl(fd, F_SETFL, arg) < 0) { 
+             throw("Error fcntl(..., F_SETFL)"); 
+         exit(0); 
+      } 
     }
 
     memcpy((void *)this->local_addr, &localaddr, sizeof(localaddr));

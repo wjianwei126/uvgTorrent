@@ -45,7 +45,7 @@ int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connec
     int32_t event = net_utils.htonl(2);
     uint32_t ip = net_utils.htonl(0);
     uint32_t key = net_utils.htonl(1);//rand_utils.nrand32(rand() % 10));
-    int32_t num_want = net_utils.htonl(2);
+    int32_t num_want = net_utils.htonl(-1);
     uint16_t port = net_utils.htons(0);
     uint16_t extensions = net_utils.htons(0);
 
@@ -191,7 +191,7 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
         uint16_t port; //net_utils.ntohs
         memcpy(&port, peers + peer_position + sizeof(int32_t), sizeof(uint16_t));
 		port = net_utils.ntohs(port);
-
+        
         struct in_addr peer_ip;
     	peer_ip.s_addr = int_ip;
         char * ip = inet_ntoa(peer_ip);
@@ -200,8 +200,8 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
             break;
         }
 
-        Peer * peer = NEW(Peer, ip, port);
-        peer->print(peer);
+        Peer * peer = NEW(Peer, ip, (int) port);
+        
         peer_position += peer_size;
         this->peers->append(this->peers, peer, sizeof(Peer));
 
