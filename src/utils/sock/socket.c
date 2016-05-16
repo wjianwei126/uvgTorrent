@@ -130,7 +130,7 @@ int Socket_connect(Socket *this)
     if(this->type == SOCKET_TYPE_UDP){
         timeout.tv_sec = 1;  /* 30 Secs Timeout */
     } else if(this->type == SOCKET_TYPE_TCP) {
-        timeout.tv_sec = 3;
+        timeout.tv_sec = 30;
     } 
     timeout.tv_usec = 0;
 

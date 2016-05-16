@@ -174,18 +174,14 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 
 	this->peers = NULL;
 	this->peers = NEW(Linkedlist);
-    
-    debug("RESPONSE SIZE :: %zd" ,res_size);
-
 	
     check_mem(this->peers);
     
 
-    int last_peer_position = res_size - sizeof(int32_t) - sizeof(int16_t);
+    int peer_size = sizeof(int32_t) + sizeof(int16_t);
     int peer_position = 0;
 
-
-    while ( peer_position < last_peer_position ) {
+    while ( pos + peer_position < res_size ) {
         // loop through peers until end of response from tracker
         void * peers = raw_response + pos;
         int32_t int_ip;
@@ -206,7 +202,7 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 
         Peer * peer = NEW(Peer, ip, port);
         peer->print(peer);
-        peer_position += sizeof(int32_t) + sizeof(uint16_t);
+        peer_position += peer_size;
         this->peers->append(this->peers, peer, sizeof(Peer));
 
         free(peer);
