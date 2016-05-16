@@ -224,7 +224,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
         sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
         info_hash += 2 * sizeof(char);
     }
-
+    
     /* hardcoded peer_id -> replace with random val */
     char * peer_id = "UVG01234567891234567";
 

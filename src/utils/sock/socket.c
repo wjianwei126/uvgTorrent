@@ -162,23 +162,23 @@ int Socket_connect(Socket *this)
             throw("getsockname failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
-        fd_set fds;
+        /*fd_set fds;
 
         FD_ZERO(&fds);
-        FD_SET(fd, &fds);
+        FD_SET(fd, &fds);*/
 
         if (connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr)) < 0) {
-            if (errno != EINPROGRESS) {
-                return EXIT_FAILURE;
-                // throw("connect failed. Error");
-            }
+            //if (errno != EINPROGRESS) {
+                //return EXIT_FAILURE;
+                throw("connect failed. Error");
+            //}
         }
-        int error = select(fd, NULL, &fds, NULL, &timeout);
+        /*int error = select(fd, NULL, &fds, NULL, &timeout);
         if(error == 0){
             if (FD_ISSET(fd, &fds)) {
               //FD_CLR(0, &fds);
             }
-        }
+        }*/
     }
 
     memcpy((void *)this->local_addr, &localaddr, sizeof(localaddr));

@@ -42,10 +42,10 @@ int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connec
 	int64_t downloaded = net_utils.htonll(0);
     int64_t left = net_utils.htonll(0);
     int64_t uploaded = net_utils.htonll(0);
-    int32_t event = net_utils.htonl(0);
+    int32_t event = net_utils.htonl(2);
     uint32_t ip = net_utils.htonl(0);
     uint32_t key = net_utils.htonl(1);//rand_utils.nrand32(rand() % 10));
-    int32_t num_want = net_utils.htonl(-1);
+    int32_t num_want = net_utils.htonl(2);
     uint16_t port = net_utils.htons(0);
     uint16_t extensions = net_utils.htons(0);
 
@@ -174,20 +174,26 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
 
 	this->peers = NULL;
 	this->peers = NEW(Linkedlist);
+    
+    debug("RESPONSE SIZE :: %zd" ,res_size);
+
+	
     check_mem(this->peers);
     
+
     int last_peer_position = res_size - sizeof(int32_t) - sizeof(int16_t);
     int peer_position = 0;
 
 
     while ( peer_position < last_peer_position ) {
         // loop through peers until end of response from tracker
+        void * peers = raw_response + pos;
         int32_t int_ip;
-		memcpy(&int_ip,raw_response + pos + peer_position, sizeof(int32_t));
+		memcpy(&int_ip, peers + peer_position, sizeof(int32_t));
 		int_ip = net_utils.ntohl(int_ip);
 
-        int16_t port; //net_utils.ntohs
-        memcpy(&port,raw_response + pos + peer_position + sizeof(int32_t), sizeof(int16_t));
+        uint16_t port; //net_utils.ntohs
+        memcpy(&port, peers + peer_position + sizeof(int32_t), sizeof(uint16_t));
 		port = net_utils.ntohs(port);
 
         struct in_addr peer_ip;
@@ -199,14 +205,12 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
         }
 
         Peer * peer = NEW(Peer, ip, port);
-
-        //debug("peer :: %s:%" PRId16, ip, port);
-        peer_position += sizeof(int32_t) + sizeof(int16_t);
+        peer->print(peer);
+        peer_position += sizeof(int32_t) + sizeof(uint16_t);
         this->peers->append(this->peers, peer, sizeof(Peer));
 
         free(peer);
     }
-
 
 	return EXIT_SUCCESS;
 
