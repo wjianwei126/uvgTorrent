@@ -89,7 +89,7 @@ int Peer_handshake(Peer *this, char * info_hash){
 
     int result = socket->connect(socket);
     if(result == EXIT_SUCCESS){
-    	handshake = NEW(Peer_Handshake_Packet, info_hash, "UVG01234567891234567");
+    	handshake = NEW(Peer_Handshake_Packet, info_hash, "-UVG012345678912345-");
     	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
             int result = handshake->receive(handshake, socket);
 

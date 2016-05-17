@@ -135,8 +135,10 @@ int Socket_connect(Socket *this)
     } 
     timeout.tv_usec = 0;
 
-    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
-    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
+    if(this->type == SOCKET_TYPE_UDP){
+        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
+        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
+    }
 
     // bind local socket
     memset((void *)&localaddr, 0, sizeof(localaddr));
@@ -291,11 +293,11 @@ int Socket_send(Socket *this, void * message, size_t message_size)
             throw("send failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
-        debug("presend");
         if (send(*this->sock_desc, message, message_size, 0) == -1){
-            //throw("send failed");
+            throw("send failed");
+        } else {
+            send(*this->sock_desc, "\n", 2, 0);
         }
-        debug("postsend");
     }
 
 
