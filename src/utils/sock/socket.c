@@ -135,10 +135,8 @@ int Socket_connect(Socket *this)
     } 
     timeout.tv_usec = 0;
 
-    if(this->type == SOCKET_TYPE_UDP){
-        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
-        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
-    }
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
 
     // bind local socket
     memset((void *)&localaddr, 0, sizeof(localaddr));
