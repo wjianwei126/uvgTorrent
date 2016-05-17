@@ -186,7 +186,7 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
         void * peers = raw_response + pos;
         int32_t int_ip;
 		memcpy(&int_ip, peers + peer_position, sizeof(int32_t));
-		int_ip = net_utils.ntohl(int_ip);
+		//int_ip = net_utils.ntohl(int_ip);
 
         uint16_t port; //net_utils.ntohs
         memcpy(&port, peers + peer_position + sizeof(int32_t), sizeof(uint16_t));
@@ -200,8 +200,8 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
             break;
         }
 
-        Peer * peer = NEW(Peer, ip, (int) port);
-        //Peer * peer = NEW(Peer, "127.0.0.1", 12321);
+        //Peer * peer = NEW(Peer, ip, (int) port);
+        Peer * peer = NEW(Peer, "127.0.0.1", 12321);
         peer_position += peer_size;
         this->peers->append(this->peers, peer, sizeof(Peer));
 

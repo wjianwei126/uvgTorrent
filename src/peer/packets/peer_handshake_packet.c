@@ -58,14 +58,14 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 	memcpy(&this->bytes[pos], &pstr, strlen(pstr) * sizeof(int8_t));
 	pos += strlen(pstr) * sizeof(int8_t);
 
-	this->bytes[pos] = 0;
-	this->bytes[pos+1] = 0;
-	this->bytes[pos+2] = 0;
-	this->bytes[pos+3] = 0;
-	this->bytes[pos+4] = 0;
-	this->bytes[pos+5] = 0;
-	this->bytes[pos+6] = 0;
-	this->bytes[pos+7] = 0;
+	this->bytes[pos] = 0x0;
+	this->bytes[pos+1] = 0x0;
+	this->bytes[pos+2] = 0x0;
+	this->bytes[pos+3] = 0x0;
+	this->bytes[pos+4] = 0x0;
+	this->bytes[pos+5] = 0x0;
+	this->bytes[pos+6] = 0x0;
+	this->bytes[pos+7] = 0x0;
 	pos += 8;
 
 	memcpy(&this->bytes[pos], &info_hash_bytes, 20 * sizeof(int8_t));
@@ -204,7 +204,9 @@ int Peer_Handshake_Packet_receive (Peer_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);
+
     debug("packet_size : %zd", packet_size);
+    
     if(packet_size != -1){
     	/* prepare request */
 		this->response = NEW(Peer_Handshake_Response, out, packet_size);

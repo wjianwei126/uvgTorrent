@@ -91,7 +91,15 @@ int Peer_handshake(Peer *this, char * info_hash){
     if(result == EXIT_SUCCESS){
     	handshake = NEW(Peer_Handshake_Packet, info_hash, "-UVG012345678912345-");
     	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
-            int result = handshake->receive(handshake, socket);
+
+            int attempts = 0;
+            int result = EXIT_FAILURE;
+            while(attempts < 5){
+                result = handshake->receive(handshake, socket);
+                if(result == EXIT_SUCCESS){
+                    break;
+                }
+            }
 
             if(result == EXIT_SUCCESS){
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
