@@ -163,7 +163,6 @@ int Socket_connect(Socket *this)
             throw("getsockname failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
-        /*
         long arg; 
 
         if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
@@ -174,7 +173,6 @@ int Socket_connect(Socket *this)
           if(fcntl(fd, F_SETFL, arg) < 0) { 
              throw("Error fcntl(..., F_SETFL)"); 
           } 
-        */
 
         int res = connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr));
 
@@ -183,7 +181,7 @@ int Socket_connect(Socket *this)
                 return EXIT_FAILURE;
                 throw("connect failed. Error");
             } else {
-                /*fd_set fds;
+                fd_set fds;
 
                 FD_ZERO(&fds);
                 FD_SET(fd, &fds);
@@ -200,22 +198,20 @@ int Socket_connect(Socket *this)
                     if (valopt) { 
                         throw("Error in delayed connection"); 
                     } 
-                }*/
+                }
             }
         }
         
         // Set to blocking mode again... 
-        /*
-      if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
-             throw("Error fcntl(..., F_GETFL)"); 
-         exit(0); 
-      } 
-      arg &= (~O_NONBLOCK); 
-      if( fcntl(fd, F_SETFL, arg) < 0) { 
-             throw("Error fcntl(..., F_SETFL)"); 
-         exit(0); 
-      } 
-      */
+        if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
+            throw("Error fcntl(..., F_GETFL)"); 
+            exit(0); 
+        } 
+        arg &= (~O_NONBLOCK); 
+        if( fcntl(fd, F_SETFL, arg) < 0) { 
+            throw("Error fcntl(..., F_SETFL)"); 
+            exit(0); 
+        }
     }
 
     memcpy((void *)this->local_addr, &localaddr, sizeof(localaddr));
