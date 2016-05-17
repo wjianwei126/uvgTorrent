@@ -114,9 +114,10 @@
                 pstrlen = 0;
 
                 memcpy(&pstrlen, &buf[pos], sizeof(int8_t));
-                //this->pstrlen = net_utils.ntohs(this->pstrlen);
+                pstrlen = ntohs(pstrlen);
                 pos += sizeof(int8_t);
                 printf("PSTRLEN :: %i", pstrlen);
+                printf()
 
                 printf("Received in pid=%d, text=: %s \n",getpid(), buf);
                 sleep(1);
