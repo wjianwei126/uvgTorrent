@@ -260,7 +260,7 @@ ssize_t Socket_receive(Socket *this, char buffer[2048])
 
         return count;
     } else if(this->type == SOCKET_TYPE_TCP) {
-        ssize_t count=recv(fd,buffer,2048,0);
+        ssize_t count=recv(fd,buffer,68,0);
         if (count==2048) {
             log_warn("datagram too large for buffer: truncated");
         } else {

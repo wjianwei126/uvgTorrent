@@ -90,27 +90,27 @@ int Peer_handshake(Peer *this, char * info_hash){
     int result = socket->connect(socket);
     if(result == EXIT_SUCCESS){
     	handshake = NEW(Peer_Handshake_Packet, info_hash, "-UVG012345678912345-");
-    	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
-
-            int attempts = 0;
-            int result = EXIT_FAILURE;
-            while(attempts < 5){
+        int attempts = 0;
+        int success = 0;
+        while(attempts < 5){
+            attempts++;
+        	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
+                int result = EXIT_FAILURE;
                 result = handshake->receive(handshake, socket);
+
                 if(result == EXIT_SUCCESS){
+                    success = 1;
+                    fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
                     break;
                 }
-            }
-
-            if(result == EXIT_SUCCESS){
-                fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
             } else {
-                fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+                socket->destroy(socket);
+                goto error;
             }
-
-            handshake->destroy(handshake);
-        } else {
-            socket->destroy(socket);
-            goto error;
+        }
+        handshake->destroy(handshake);
+        if (success == 0) {
+            fprintf(stderr, " %s✘%s\n", KRED, KNRM);
         }
     } else {
         socket->destroy(socket);
