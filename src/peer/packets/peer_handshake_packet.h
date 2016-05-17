@@ -11,7 +11,7 @@ struct Peer_Handshake_Request {
     void (*print) (Peer_Handshake_Request *this);
     void (*destroy) (Peer_Handshake_Request *this);
 
-	int32_t pstrlen;
+	int8_t pstrlen;
 	char * pstr;
 	char * info_hash;
 	char * peer_id;
@@ -30,7 +30,7 @@ struct Peer_Handshake_Response {
     void (*print) (Peer_Handshake_Response *this);
     void (*destroy) (Peer_Handshake_Response *this);
 
-	int32_t pstrlen;
+	int8_t pstrlen;
 	char * pstr;
 	char * info_hash;
 	char * peer_id;

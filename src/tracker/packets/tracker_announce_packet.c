@@ -186,9 +186,8 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
         void * peers = raw_response + pos;
         int32_t int_ip;
 		memcpy(&int_ip, peers + peer_position, sizeof(int32_t));
-		//int_ip = net_utils.ntohl(int_ip);
-
-        uint16_t port; //net_utils.ntohs
+		
+        uint16_t port;
         memcpy(&port, peers + peer_position + sizeof(int32_t), sizeof(uint16_t));
 		port = net_utils.ntohs(port);
         

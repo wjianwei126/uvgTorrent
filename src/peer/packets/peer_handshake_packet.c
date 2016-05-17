@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include "utils/net/net_utils.h"
 #include "peer/packets/peer_handshake_packet.h"
 
@@ -34,7 +35,7 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 	// size_t length = 16;
 
 	/* store packet data in struct for easy debugging */
-	int8_t pstrlen = net_utils.htonl(19);
+	char pstrlen = 19; //net_utils.htonl(19);
 	char * pstr = "BitTorrent protocol";
 	info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
 
@@ -52,8 +53,8 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 
 	/* store packet data in byte array for sending */
 	size_t pos = 0;
-	memcpy(&this->bytes[pos], &pstrlen, sizeof(int8_t));
-	pos += sizeof(int8_t);
+	memcpy(&this->bytes[pos], &pstrlen, sizeof(char));
+	pos += sizeof(char);
 
 	memcpy(&this->bytes[pos], &pstr, strlen(pstr) * sizeof(int8_t));
 	pos += strlen(pstr) * sizeof(int8_t);
@@ -115,10 +116,18 @@ error:
 
 int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_response[2048], ssize_t res_size)
 {
-	//struct Peer_Handshake_response resp;
-
 	size_t pos = 0;
+
+	memcpy(&this->pstrlen, &raw_response[pos], sizeof(int8_t));
+	//this->pstrlen = net_utils.ntohs(this->pstrlen);
+	pos += sizeof(int8_t);
+	debug("PSTRLEN :: %i", this->pstrlen);
+
 	/*
+	char * pstr;
+	char * info_hash;
+	char * peer_id;
+	
 	memcpy(&this->action, &raw_response[pos], sizeof(int32_t));
 	this->action = net_utils.ntohl(this->action);
 	pos += sizeof(int32_t);
@@ -127,7 +136,7 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 	pos += sizeof(int32_t);
 
 	memcpy(&this->connection_id, &raw_response[pos], sizeof(int64_t));
-	this->connection_id = net_utils.n*/
+	this->connection_id = net_utils.ntohl(this->connection_id)*/
 
 	return EXIT_SUCCESS;
 }
