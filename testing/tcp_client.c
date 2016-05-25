@@ -24,109 +24,143 @@
 
     int main(int argc, char *argv[])
     {
-        int port = strtol(argv[2], NULL, 10);
-        int sockfd, numbytes;  
-        char buf[MAXDATASIZE];
-        struct hostent *he;
-        struct sockaddr_in their_addr; /* connector's address information */
+        int pos = 0;
+        char message[69] = "00000000000000000000000000000000000000000000000000000000000000000000\0";
+        char * protocol_string = "BitTorrent protocol";
+        message[0] = (char)19;
+        pos += 1;
 
-        if (argc != 3) {
-            fprintf(stderr,"usage: client hostname\n");
-            exit(1);
+        strcpy(&message[pos], protocol_string);
+        pos += strlen(protocol_string);
+        
+        int i;
+        for (i = 0; i < 8; i++){
+            message[pos] = (char)0;
+            pos += 1;
         }
 
-        if ((he=gethostbyname(argv[1])) == NULL) {  /* get the host info */
-            herror("gethostbyname");
-            exit(1);
+        char * info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
+        char * peer_id = "-UVG012345678912345-";
+        int8_t info_hash_bytes[20];
+        /* hex string to int8_t array */
+        int count = 28;
+        for(count = 28; count < 28 + sizeof(info_hash_bytes); count++) {
+            sscanf(info_hash, "%2hhx", &message[count]);
+            info_hash += 2 * sizeof(char);
+            pos += 1;
         }
 
-        if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-            perror("socket");
-            exit(1);
+        strcpy(&message[pos], peer_id);
+        pos += strlen(peer_id);
+
+        // INFO HASH // 
+
+        printf("%s", message);
+        pos = 0;
+int port = strtol(argv[2], NULL, 10);
+char buf[MAXDATASIZE];
+struct hostent *he;
+struct sockaddr_in their_addr; /* connector's address information */
+
+if (argc != 3) {
+    fprintf(stderr,"usage: client hostname\n");
+    exit(1);
+}
+
+if ((he=gethostbyname(argv[1])) == NULL) {  /* get the host info */
+    herror("gethostbyname");
+    exit(1);
+}
+
+
+
+their_addr.sin_family = AF_INET;      /* host byte order */
+their_addr.sin_port = htons(port);    /* short, network byte order */
+their_addr.sin_addr = *((struct in_addr *)he->h_addr);
+bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
+
+while (1) {
+    int sockfd, numbytes;
+
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+        perror("socket");
+        exit(1);
+    }  
+
+    if (connect(sockfd, (struct sockaddr *)&their_addr, \
+                                          sizeof(struct sockaddr)) == -1) {
+        perror("connect");
+        exit(1);
+    }
+        /* prepare handshake message */
+        //char bytes[68];
+//
+        int8_t pstrlen = htons(19);
+        //char * pstr = "BitTorrent protocol";
+        //char * info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
+        //char * peer_id = "-UVG012345678912345-";
+//
+        //int8_t info_hash_bytes[20];
+        ///* hex string to int8_t array */
+        //int count = 0;
+        //for(count = 0; count < sizeof(info_hash_bytes); count++) {
+        //    sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
+        //    info_hash += 2 * sizeof(char);
+        //}
+
+        if (send(sockfd, message, 68, 0) == -1){
+              //perror("send");
+              //exit (1);
+        }
+        printf("After the send function \n");
+        numbytes = -1;
+        while (numbytes < 0){
+            if ((numbytes=recv(sockfd, buf, 68, 0)) == -1) {
+                        //perror("recv");
+                        //exit(1);
+            } else {
+                break;
+            }    
         }
 
-        their_addr.sin_family = AF_INET;      /* host byte order */
-        their_addr.sin_port = htons(port);    /* short, network byte order */
-        their_addr.sin_addr = *((struct in_addr *)he->h_addr);
-        bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
+        //buf[numbytes] = '\0';
 
-        if (connect(sockfd, (struct sockaddr *)&their_addr, \
-                                              sizeof(struct sockaddr)) == -1) {
-            perror("connect");
-            exit(1);
+        int pos = 0;
+        pstrlen = 0;
+
+        memcpy(&pstrlen, &buf[pos], sizeof(int8_t));
+        //pstrlen = ntohs(pstrlen);
+        printf("PSTRLEN :: %i", pstrlen);
+        printf("numbytes :: %i", numbytes);
+
+        printf("Received in pid=%d, text=: %s \n",getpid(), buf);
+
+        char * meta_message = "d8:msg_typei0e5:piecei0ee";
+
+        if (send(sockfd, meta_message, 25, 0) == -1){
+              //perror("send");
+              //exit (1);
         }
-        while (1) {
-                /* prepare handshake message */
-                char bytes[68];
-
-                int8_t pstrlen = 19;
-                char * pstr = "BitTorrent protocol";
-                char * info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
-                char * peer_id = "-UVG012345678912345-";
-
-                int8_t info_hash_bytes[20];
-                /* hex string to int8_t array */
-                int count = 0;
-                for(count = 0; count < sizeof(info_hash_bytes); count++) {
-                    sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
-                    info_hash += 2 * sizeof(char);
-                }
-
-                /* store packet data in byte array for sending */
-                size_t pos = 0;
-                memcpy(&bytes[pos], &pstrlen, sizeof(char));
-                pos += sizeof(char);
-
-                memcpy(&bytes[pos], &pstr, strlen(pstr) * sizeof(int8_t));
-                pos += strlen(pstr) * sizeof(int8_t);
-
-                bytes[pos] = 0x0;
-                bytes[pos+1] = 0x0;
-                bytes[pos+2] = 0x0;
-                bytes[pos+3] = 0x0;
-                bytes[pos+4] = 0x0;
-                bytes[pos+5] = 0x0;
-                bytes[pos+6] = 0x0;
-                bytes[pos+7] = 0x0;
-                pos += 8;
-
-                memcpy(&bytes[pos], &info_hash_bytes, 20 * sizeof(int8_t));
-                pos += 20 * sizeof(int8_t);
-
-                memcpy(&bytes[pos], &peer_id, strlen(peer_id) * sizeof(int8_t));
-                pos += strlen(peer_id) * sizeof(int8_t);
-
-
-                if (send(sockfd, &bytes, 68, 0) == -1){
-                      perror("send");
-                      exit (1);
-                }
-                printf("After the send function \n");
-
-                if ((numbytes=recv(sockfd, buf, MAXDATASIZE, 0)) == -1) {
-                            perror("recv");
-                            exit(1);
-                }        
-
-                //buf[numbytes] = '\0';
-
-                int post = 0;
-                pstrlen = 0;
-
-                memcpy(&pstrlen, &buf[pos], sizeof(int8_t));
-                pstrlen = ntohs(pstrlen);
-                pos += sizeof(int8_t);
-                printf("PSTRLEN :: %i", pstrlen);
-                printf()
-
-                printf("Received in pid=%d, text=: %s \n",getpid(), buf);
-                sleep(1);
-
+        printf("After the send function \n");
+        char metadata[101];
+        numbytes = -1;
+        while (numbytes < 0){
+            if ((numbytes=recv(sockfd, metadata, 100, 0)) == -1) {
+                        //perror("recv");
+                        //exit(1);
+            } else {
+                break;
+            }    
         }
+        metadata[numbytes] = '\0';
+        printf("numbytes :: %i \n", numbytes);
+        printf("got message: %s \n", metadata);
 
         close(sockfd);
+        sleep(1);
+}
 
-        return 0;
+return 0;
     }
 
 

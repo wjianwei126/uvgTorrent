@@ -35,45 +35,40 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 	// size_t length = 16;
 
 	/* store packet data in struct for easy debugging */
-	char pstrlen = 19; //net_utils.htonl(19);
+	int pos = 0;
+	int pstrlen = 19;
 	char * pstr = "BitTorrent protocol";
 	info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
 
+	this->bytes[0] = (char)19;
+	pos += 1;
+
+	strcpy(&this->bytes[pos], pstr);
+    pos += strlen(pstr);
+        
+    int i;
+    for (i = 0; i < 8; i++){
+        this->bytes[pos] = (char)1;
+        pos += 1;
+    }
+
 	int8_t info_hash_bytes[20];
     /* hex string to int8_t array */
-    for(int count = 0; count < sizeof(info_hash_bytes); count++) {
-        sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
+    for(int count = 28; count < 28 + sizeof(info_hash_bytes); count++) {
+        sscanf(info_hash, "%2hhx", &this->bytes[count]);
         info_hash += 2 * sizeof(char);
+        pos += 1;
     }
+
+    strcpy(&this->bytes[pos], peer_id);
+    pos += strlen(peer_id);
+
+    debug("%s", this->bytes);
 
 	this->pstr = malloc(strlen(pstr)+1);
     //check_mem(this->pstr);
 	this->pstrlen = pstrlen;
 	strcpy(this->pstr, pstr);
-
-	/* store packet data in byte array for sending */
-	size_t pos = 0;
-	memcpy(&this->bytes[pos], &pstrlen, sizeof(char));
-	pos += sizeof(char);
-
-	memcpy(&this->bytes[pos], &pstr, strlen(pstr) * sizeof(int8_t));
-	pos += strlen(pstr) * sizeof(int8_t);
-
-	this->bytes[pos] = 0x0;
-	this->bytes[pos+1] = 0x0;
-	this->bytes[pos+2] = 0x0;
-	this->bytes[pos+3] = 0x0;
-	this->bytes[pos+4] = 0x0;
-	this->bytes[pos+5] = 0x0;
-	this->bytes[pos+6] = 0x0;
-	this->bytes[pos+7] = 0x0;
-	pos += 8;
-
-	memcpy(&this->bytes[pos], &info_hash_bytes, 20 * sizeof(int8_t));
-	pos += 20 * sizeof(int8_t);
-
-	memcpy(&this->bytes[pos], &peer_id, strlen(peer_id) * sizeof(int8_t));
-	pos += strlen(peer_id) * sizeof(int8_t);
 	
 	return EXIT_SUCCESS;
 }

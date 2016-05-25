@@ -186,7 +186,8 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
         void * peers = raw_response + pos;
         int32_t int_ip;
 		memcpy(&int_ip, peers + peer_position, sizeof(int32_t));
-		
+		int_ip = net_utils.ntohl(int_ip);
+
         uint16_t port;
         memcpy(&port, peers + peer_position + sizeof(int32_t), sizeof(uint16_t));
 		port = net_utils.ntohs(port);
@@ -195,12 +196,20 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
     	peer_ip.s_addr = int_ip;
         char * ip = inet_ntoa(peer_ip);
 
+        unsigned char bytes[4];
+	    bytes[0] = int_ip & 0xFF;
+	    bytes[1] = (int_ip >> 8) & 0xFF;
+	    bytes[2] = (int_ip >> 16) & 0xFF;
+	    bytes[3] = (int_ip >> 24) & 0xFF;	
+	    sprintf(ip, "%d.%d.%d.%d", bytes[3], bytes[2], bytes[1], bytes[0]);     
+
         if(strcmp(ip,"0.0.0.0") ==	 0){
             break;
         }
 
         //Peer * peer = NEW(Peer, ip, port);
-        Peer * peer = NEW(Peer, "127.0.0.1", 12321);
+        //peer->print(peer);
+        Peer * peer = NEW(Peer, "127.0.0.1", 51413);
         peer_position += peer_size;
         this->peers->append(this->peers, peer, sizeof(Peer));
 
