@@ -31,8 +31,8 @@ struct Peer_Handshake_Response {
     void (*destroy) (Peer_Handshake_Response *this);
 
 	int8_t pstrlen;
-	char pstr[19];
-	char peer_id[20];
+	char pstr[20];
+	char peer_id[21];
 };
 
 Peer_Handshake_Response *Peer_Handshake_Response_new (size_t size, char raw_response[2048], ssize_t res_size);
