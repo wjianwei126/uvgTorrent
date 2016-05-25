@@ -110,8 +110,7 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 	memcpy(&this->pstr, &raw_response[pos], this->pstrlen);
 	pos += this->pstrlen;
 
-	memcpy(this->peer_id, &raw_response[48], 20);
-	this->peer_id[21] = '\0';
+	memcpy(&this->peer_id, &raw_response[48], 20);
 	pos += 48;
 
 	debug("%s", this->peer_id);
