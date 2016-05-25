@@ -62,22 +62,13 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 
     strcpy(&this->bytes[pos], peer_id);
     pos += strlen(peer_id);
-
-    debug("%s", this->bytes);
-
-	this->pstr = malloc(strlen(pstr)+1);
-    //check_mem(this->pstr);
-	this->pstrlen = pstrlen;
-	strcpy(this->pstr, pstr);
 	
 	return EXIT_SUCCESS;
 }
 
 void Peer_Handshake_Request_destroy(Peer_Handshake_Request *this)
 {
-	if(this) { 
-		if(this->pstr) { free(this->pstr); };
-
+	if(this) {
 		free(this); 
 	};
 }
@@ -114,24 +105,16 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 	size_t pos = 0;
 
 	memcpy(&this->pstrlen, &raw_response[pos], sizeof(int8_t));
-	//this->pstrlen = net_utils.ntohs(this->pstrlen);
 	pos += sizeof(int8_t);
-	debug("PSTRLEN :: %i", this->pstrlen);
 
-	/*
-	char * pstr;
-	char * info_hash;
-	char * peer_id;
-	
-	memcpy(&this->action, &raw_response[pos], sizeof(int32_t));
-	this->action = net_utils.ntohl(this->action);
-	pos += sizeof(int32_t);
+	memcpy(&this->pstr, &raw_response[pos], this->pstrlen);
+	pos += this->pstrlen;
 
-	memcpy(&this->transaction_id, &raw_response[pos], sizeof(int32_t));
-	pos += sizeof(int32_t);
+	memcpy(this->peer_id, &raw_response[48], 20);
+	this->peer_id[21] = '\0';
+	pos += 48;
 
-	memcpy(&this->connection_id, &raw_response[pos], sizeof(int64_t));
-	this->connection_id = net_utils.ntohl(this->connection_id)*/
+	debug("%s", this->peer_id);
 
 	return EXIT_SUCCESS;
 }
@@ -208,10 +191,8 @@ int Peer_Handshake_Packet_receive (Peer_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
     ssize_t packet_size = socket->receive(socket, out);
-
-    debug("packet_size : %zd", packet_size);
     
-    if(packet_size != -1){
+    if(packet_size > 0){
     	/* prepare request */
 		this->response = NEW(Peer_Handshake_Response, out, packet_size);
 

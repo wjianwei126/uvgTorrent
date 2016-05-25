@@ -127,22 +127,18 @@ int Socket_connect(Socket *this)
     }
 
     struct timeval timeout;
+    timeout.tv_sec = 1;  /* 30 Secs Timeout */
+    timeout.tv_usec = 0;
+
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
 
     if(this->type == SOCKET_TYPE_UDP){
-        timeout.tv_sec = 1;  /* 30 Secs Timeout */
-        timeout.tv_usec = 0;
-
-        setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
-        setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
-
         memset((void *)&localaddr, 0, sizeof(localaddr));
         localaddr.sin_family = AF_INET;
         localaddr.sin_addr.s_addr = htonl(INADDR_ANY);
         localaddr.sin_port = htons(0);
-    } else if(this->type == SOCKET_TYPE_TCP) {
-        //timeout.tv_sec = 10;
-    } 
-
+    }
 
     struct hostent *he;
     if ((he=gethostbyname(this->ip)) == NULL) {  /* get the host info */
@@ -172,56 +168,13 @@ int Socket_connect(Socket *this)
             throw("getsockname failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
-        /*long arg; 
-
-        if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
-             throw("Error fcntl(..., F_GETFL)"); 
-             exit(0); 
-          } 
-          arg |= O_NONBLOCK;
-          if(fcntl(fd, F_SETFL, arg) < 0) { 
-             throw("Error fcntl(..., F_SETFL)"); 
-          } */
-
         int res = connect(fd , (struct sockaddr *)&remaddr , sizeof(remaddr));
 
         if(res < 0) {
-            /*if (errno != EINPROGRESS) {
-                return EXIT_FAILURE;
-                throw("connect failed. Error");
-            } else {
-                fd_set fds;
-
-                FD_ZERO(&fds);
-                FD_SET(fd, &fds);
-                int error = select(fd+1, NULL, &fds, NULL, &timeout);
-                if (error < 0 && errno != EINTR) { 
-                      throw("Error connecting");
-                } else if (error > 0) { 
-                    int valopt;
-                    socklen_t lon = sizeof(int); 
-                    if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (void*)(&valopt), &lon) < 0) { 
-                        throw("error in getsockopt"); 
-                    } 
-                    // Check the value returned... 
-                    if (valopt) { 
-                        throw("Error in delayed connection"); 
-                    } 
-                }
-            }*/
-            throw("Error in connection"); 
+            //throw("Error in connection");
+            errno=0;
+            goto error;
         }
-        
-        // Set to blocking mode again... 
-        /*if( (arg = fcntl(fd, F_GETFL, NULL)) < 0) { 
-            throw("Error fcntl(..., F_GETFL)"); 
-            exit(0); 
-        } 
-        arg &= (~O_NONBLOCK); 
-        if( fcntl(fd, F_SETFL, arg) < 0) { 
-            throw("Error fcntl(..., F_SETFL)"); 
-            exit(0); 
-        }*/
     }
 
     memcpy((void *)this->local_addr, &localaddr, sizeof(localaddr));
@@ -302,10 +255,10 @@ int Socket_send(Socket *this, void * message, size_t message_size)
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
         if (send(*this->sock_desc, message, message_size, 0) == -1){
-            throw("send failed");
-        }/* else {
-            send(*this->sock_desc, "\n", 2, 0);
-        }*/
+            // throw("send failed");
+            errno=0;
+            goto error;
+        }
     }
 
 
