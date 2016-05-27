@@ -38,7 +38,7 @@ def generate_handshake(info_hash, peer_id):
 	len_id = str(len(protocol_id))
 	reserved = "00000000"
 
-	packet = struct.pack('c19scccccccc20s20s', chr(19), "BitTorrent protocol", chr(0), chr(0), chr(0), chr(0), chr(0), chr(0), chr(0), chr(0), info_hash, peer_id)
+	packet = struct.pack('c19s8s20s20s', chr(19), "BitTorrent protocol", "\x00\x00\x00\x00\x00\x10\x00\x00", info_hash, peer_id)
 	print(len(packet))
 
 	#f = open('packet','w')
@@ -62,17 +62,13 @@ def send_recv_handshake(handshake, host, port):
 
 def send_recv_metadata(s):
 	# METADATA HANDSHAKE
-	data = {'v': 'uvgTorrent 0.1.0', 'm': {'ut_metadata':  2}, 'p': 6881, 'yourip':'127.0.0.1'}
-	data = chr(0) + bencode.bencode(data)
-	towrite = ''.join( (
-                struct.pack('>I', len(data)+1),
-                chr(20),
-                data) )
+	data = bencode.bencode({"m":{"ut_metadata": 1}})
+	data = chr(20) + chr(0) + data
 
-	print("SENT     :: " + towrite)
-	s.send(towrite)
+	print("SENT     :: " + data)
+	s.send(data)
 
-	data = s.recv(100)
+	data = s.recv(4096)
 	print("RESPONSE :: " + data)
 
 	# METADATA REQUEST
