@@ -45,7 +45,7 @@ int Tracker_Announce_Request_init(Tracker_Announce_Request *this, int64_t connec
     int32_t event = net_utils.htonl(2);
     uint32_t ip = net_utils.htonl(0);
     uint32_t key = net_utils.htonl(1);//rand_utils.nrand32(rand() % 10));
-    int32_t num_want = net_utils.htonl(-1);
+    int32_t num_want = net_utils.htonl(20);
     uint16_t port = net_utils.htons(0);
     uint16_t extensions = net_utils.htons(0);
 

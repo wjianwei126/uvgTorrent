@@ -105,6 +105,7 @@ error:
 
 int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_response[2048], ssize_t res_size)
 {
+    /*
 	size_t pos = 0;
 
 	memcpy(&this->pstrlen, &raw_response[pos], sizeof(int8_t));
@@ -120,6 +121,7 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 
 	//debug("%s", this->pstr);
 	debug("%s", this->peer_id);
+    */
 
 	return EXIT_SUCCESS;
 }
