@@ -47,7 +47,11 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
         
     int i;
     for (i = 0; i < 8; i++){
-        this->bytes[pos] = (char)1;
+        if(i == 5){
+            this->bytes[pos] = '\x10';
+        } else {
+            this->bytes[pos] = '\x00';
+        }
         pos += 1;
     }
 
