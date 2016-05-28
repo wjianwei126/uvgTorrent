@@ -128,13 +128,8 @@ int Socket_connect(Socket *this)
 
     struct timeval timeout;
 
-    if(this->type == SOCKET_TYPE_UDP){
-        timeout.tv_sec = 1;  /* 30 Secs Timeout */
-        timeout.tv_usec = 0;
-    } else {
-        timeout.tv_sec = 10;  /* 30 Secs Timeout */
-        timeout.tv_usec = 0;
-    }
+    timeout.tv_sec = 1;  /* 30 Secs Timeout */
+    timeout.tv_usec = 0;
 
     setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
     setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));

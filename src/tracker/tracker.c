@@ -260,6 +260,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             }
 
             announce_req->destroy(announce_req);
+            info_hash_list->destroy(info_hash_list);
 
             return EXIT_SUCCESS;
         } else {
@@ -274,8 +275,6 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             this->announce(this, torrent);
         }
     }
-
-    info_hash_list->destroy(info_hash_list);
     
     announce_req->destroy(announce_req);
     info_hash_list->destroy(info_hash_list);

@@ -126,8 +126,8 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 void Peer_Handshake_Response_destroy(Peer_Handshake_Response *this)
 {
 	if(this) { 
-		//if(this->pstr) { free(this->pstr); }
-		//if(this->peer_id) { free(this->peer_id); }
+		if(this->pstr) { free(this->pstr); }
+		if(this->peer_id) { free(this->peer_id); }
 		free(this); 
 	};
 }

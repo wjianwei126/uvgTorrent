@@ -96,23 +96,27 @@ int Peer_Extended_Handshake_Response_init(Peer_Extended_Handshake_Response *this
     char * metadata_size_str = strstr(bencoded_response, metadata_key);
     int position =  metadata_size_str - bencoded_response;
 
-    bencoded_response = bencoded_response + position + strlen(metadata_key);
-    char buffer[10];
+    if(position < res_size){
+        bencoded_response = bencoded_response + position + strlen(metadata_key);
+        char buffer[10];
 
-    int i;
+        int i;
 
-    for (i = 0; i < 10; i++){
-        if (bencoded_response[i] != 'e'){
-            buffer[i] = bencoded_response[i];
-        } else {
-            buffer[i] = '\0';
-            break;
+        for (i = 0; i < 10; i++){
+            if (bencoded_response[i] != 'e'){
+                buffer[i] = bencoded_response[i];
+            } else {
+                buffer[i] = '\0';
+                break;
+            }
         }
+
+        this->metadata_size = atoi(buffer);
+    } else {
+        this->metadata_size = 0;
     }
 
-    this->metadata_size = atoi(buffer);
-    
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
 void Peer_Extended_Handshake_Response_destroy(Peer_Extended_Handshake_Response *this)

@@ -142,9 +142,11 @@ int Peer_extended_handshake(Peer *this){
         result = extended_handshake->receive(extended_handshake, this->socket);
 
         if(result == EXIT_SUCCESS){
-            success = 1;
-            fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-            debug("metadata_size :: %i", extended_handshake->response->metadata_size);
+            if(extended_handshake->response->metadata_size != 0){
+                success = 1;
+                fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+                debug("metadata_size :: %i", extended_handshake->response->metadata_size);
+            }
         }
     } else {
         goto error;
