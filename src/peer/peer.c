@@ -6,6 +6,7 @@
 #include "utils/sock/socket.h"
 #include "peer/peer.h"
 #include "peer/packets/peer_handshake_packet.h"
+#include "peer/packets/peer_extended_handshake_packet.h"
 
 Peer *Peer_new(size_t size, char *ip, uint16_t port)
 {
@@ -17,6 +18,7 @@ Peer *Peer_new(size_t size, char *ip, uint16_t port)
     Peer->print= Peer_print;
 
     Peer->handshake = Peer_handshake;
+    Peer->extended_handshake = Peer_extended_handshake;
 
     if(Peer->init(Peer, ip, port) == EXIT_FAILURE) {
         throw("Peer init failed");
@@ -50,6 +52,9 @@ int Peer_init(Peer *this, char *ip, uint16_t port)
     check_mem(this->ip);
     strcpy(this->ip, ip);
 
+    this->socket = NEW(Socket, this->ip, this->port, SOCKET_TYPE_TCP);
+    check_mem(this->socket);
+
     return EXIT_SUCCESS;
 
 error:
@@ -59,6 +64,7 @@ error:
 void Peer_destroy(Peer * this)
 {   
     if(this) {
+        if(this->socket) { this->socket->destroy(this->socket); };
         if(this->ip) { free(this->ip);  };
         free(this);
     }
@@ -82,41 +88,33 @@ void Peer_print(Peer *this){
 */
 int Peer_handshake(Peer *this, char * info_hash){
     log_confirm("Attempting Handshake :: %s:%u", this->ip, this->port);
-    Socket * socket = NEW(Socket, this->ip, this->port, SOCKET_TYPE_TCP);
-    check_mem(socket);
 
     Peer_Handshake_Packet * handshake = NULL;
 
-    int result = socket->connect(socket);
+    int result = this->socket->connect(this->socket);
     if(result == EXIT_SUCCESS){
     	handshake = NEW(Peer_Handshake_Packet, info_hash, "-UVG012345678912345-");
-        int attempts = 0;
         int success = 0;
-        while(attempts < 5){
-            attempts++;
-        	if(handshake->send(handshake, socket) == EXIT_SUCCESS){
-                int result = EXIT_FAILURE;
-                result = handshake->receive(handshake, socket);
+        
+        if(handshake->send(handshake, this->socket) == EXIT_SUCCESS){
+            int result = EXIT_FAILURE;
+            result = handshake->receive(handshake, this->socket);
 
-                if(result == EXIT_SUCCESS){
-                    success = 1;
-                    fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
-                    break;
-                }
-            } else {
-                socket->destroy(socket);
-                goto error;
+            if(result == EXIT_SUCCESS){
+                success = 1;
+                fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
             }
+        } else {
+            goto error;
         }
+
         handshake->destroy(handshake);
         if (success == 0) {
             fprintf(stderr, " %s✘%s\n", KRED, KNRM);
         }
     } else {
-        socket->destroy(socket);
     	goto error;
     }
-    socket->destroy(socket);
 	
 	return EXIT_SUCCESS;
 
@@ -124,4 +122,42 @@ error:
 	if(handshake) { handshake->destroy(handshake); };
     fprintf(stderr, " %s✘%s\n", KRED, KNRM);
 	return EXIT_FAILURE;
+}
+
+/**
+* void Peer_print(Peer *this){
+*
+* PURPOSE : print a Peer struct
+*/
+int Peer_extended_handshake(Peer *this){
+    log_confirm("Attempting Extended Handshake :: %s:%u", this->ip, this->port);
+
+    Peer_Extended_Handshake_Packet * extended_handshake = NULL;
+
+    extended_handshake = NEW(Peer_Extended_Handshake_Packet);
+    int success = 0;
+    
+    if(extended_handshake->send(extended_handshake, this->socket) == EXIT_SUCCESS){
+        int result = EXIT_FAILURE;
+        result = extended_handshake->receive(extended_handshake, this->socket);
+
+        if(result == EXIT_SUCCESS){
+            success = 1;
+            fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+        }
+    } else {
+        goto error;
+    }
+
+    extended_handshake->destroy(extended_handshake);
+    if (success == 0) {
+        fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+    }
+    
+    return EXIT_SUCCESS;
+
+error:
+    if(extended_handshake) { extended_handshake->destroy(extended_handshake); };
+    fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+    return EXIT_FAILURE;
 }

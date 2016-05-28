@@ -1,8 +1,10 @@
 #ifndef _peer_h
 #define _peer_h
 
-#include "macro/macro.h"
 #include <inttypes.h>
+
+#include "macro/macro.h"
+#include "utils/sock/socket.h"
 
 typedef struct Peer Peer;
 struct Peer {
@@ -11,6 +13,7 @@ struct Peer {
     void (*destroy)(Peer *this);
     
     int (*handshake)(Peer *this, char * info_hash);
+    int (*extended_handshake)(Peer *this);
 
     char * ip;
     uint16_t port;
@@ -18,6 +21,7 @@ struct Peer {
     int am_interested; // this client is interested in the peer
     int peer_choking; // peer is choking this client
     int peer_interested; // peer is interested in this client
+    Socket * socket;
 };
 
 /* basic functions */
@@ -27,5 +31,6 @@ void Peer_destroy(Peer *this);
 void Peer_print(Peer *this);
 
 int Peer_handshake(Peer *this, char * info_hash);
+int Peer_extended_handshake(Peer *this);
 
 #endif

@@ -219,10 +219,11 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     const char * info_hash = (char *) info_hash_list->get(info_hash_list, 2);
     
     int8_t info_hash_bytes[20];
+    int pos = 0;
     /* hex string to int8_t array */
     for(int count = 0; count < sizeof(info_hash_bytes); count++) {
-        sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
-        info_hash += 2 * sizeof(char);
+        sscanf(info_hash + pos, "%2hhx", &info_hash_bytes[count]);
+        pos += 2 * sizeof(char);
     }
     
     /* hardcoded peer_id -> replace with random val */
@@ -239,7 +240,6 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
     if(result == EXIT_SUCCESS){
         if(announce_req->response->action == 1 && this->last_transaction_id == announce_req->response->transaction_id){
             this->attempts = 0;
-            info_hash_list->destroy(info_hash_list);
             fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
 
             debug("action :: %" PRId32, announce_req->response->action);
@@ -251,7 +251,11 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             Linkednode * curr = announce_req->response->peers->head;        
             while(curr){
                 Peer * peer = (Peer *)curr->value;
+
                 int res = peer->handshake(peer, info_hash);
+                if(res == EXIT_SUCCESS) {
+                    res = peer->extended_handshake(peer);
+                }
                 curr = curr->next;
             }
 
@@ -270,6 +274,8 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             this->announce(this, torrent);
         }
     }
+
+    info_hash_list->destroy(info_hash_list);
     
     announce_req->destroy(announce_req);
     info_hash_list->destroy(info_hash_list);

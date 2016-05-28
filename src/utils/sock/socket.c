@@ -127,8 +127,14 @@ int Socket_connect(Socket *this)
     }
 
     struct timeval timeout;
-    timeout.tv_sec = 1;  /* 30 Secs Timeout */
-    timeout.tv_usec = 0;
+
+    if(this->type == SOCKET_TYPE_UDP){
+        timeout.tv_sec = 1;  /* 30 Secs Timeout */
+        timeout.tv_usec = 0;
+    } else {
+        timeout.tv_sec = 10;  /* 30 Secs Timeout */
+        timeout.tv_usec = 0;
+    }
 
     setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
     setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
@@ -220,6 +226,7 @@ ssize_t Socket_receive(Socket *this, char buffer[2048])
         return count;
     } else if(this->type == SOCKET_TYPE_TCP) {
         ssize_t count=recv(fd,buffer,68,0);
+        debug("%i", count);
         if (count==2048) {
             log_warn("datagram too large for buffer: truncated");
         } else {

@@ -4,7 +4,7 @@
 #include "macro/macro.h"
 #include "utils/sock/socket.h"
 
-/* TRACKER CONNECT REQUEST */
+/* PEER HANDSHAKE REQUEST */
 typedef struct Peer_Handshake_Request Peer_Handshake_Request;
 struct Peer_Handshake_Request { 
 	int (*init) (Peer_Handshake_Request *this, char * info_hash, char * peer_id);
@@ -23,7 +23,7 @@ int Peer_Handshake_Request_init (Peer_Handshake_Request *this, char * info_hash,
 void Peer_Handshake_Request_destroy (Peer_Handshake_Request *this);
 void Peer_Handshake_Request_print (Peer_Handshake_Request *this);
 
-/* TRACKER CONNECT RESPONSE */
+/* PEER HANDSHAKE RESPONSE */
 typedef struct Peer_Handshake_Response Peer_Handshake_Response;
 struct Peer_Handshake_Response { 
 	int (*init) (Peer_Handshake_Response *this, char raw_response[2048], ssize_t res_size);
@@ -40,7 +40,7 @@ int Peer_Handshake_Response_init (Peer_Handshake_Response *this, char raw_respon
 void Peer_Handshake_Response_destroy (Peer_Handshake_Response *this);
 void Peer_Handshake_Response_print (Peer_Handshake_Response *this);
 
-/* TRACKER CONNECT WRAPPER */
+/* PEER HANDSHAKE WRAPPER */
 typedef struct Peer_Handshake_Packet Peer_Handshake_Packet;
 struct Peer_Handshake_Packet {
 	int (*init) (Peer_Handshake_Packet *this, char * info_hash, char * peer_id);

@@ -7,6 +7,7 @@
 #include <inttypes.h>
 #include "utils/net/net_utils.h"
 #include "peer/packets/peer_handshake_packet.h"
+#include "peer/packets/peer_extended_handshake_packet.h"
 
 /* CONNECT REQUEST */
 Peer_Handshake_Request * Peer_Handshake_Request_new(size_t size, char * info_hash, char * peer_id)
@@ -37,14 +38,13 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 	/* store packet data in struct for easy debugging */
 	int pos = 0;
 	char * pstr = "BitTorrent protocol";
-	info_hash = "9609f0336566953f3bf342241b25e2437f65b2c8";
 
 	this->bytes[0] = (char)19;
 	pos += 1;
 
 	strcpy(&this->bytes[pos], pstr);
     pos += strlen(pstr);
-        
+    
     int i;
     for (i = 0; i < 8; i++){
         if(i == 5){
@@ -57,14 +57,18 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 
 	int8_t info_hash_bytes[20];
     /* hex string to int8_t array */
-    for(int count = 28; count < 28 + sizeof(info_hash_bytes); count++) {
-        sscanf(info_hash, "%2hhx", &this->bytes[count]);
+    for(int count = 0; count < sizeof(info_hash_bytes); count++) {
+        sscanf(info_hash, "%2hhx", &info_hash_bytes[count]);
         info_hash += 2 * sizeof(char);
-        pos += 1;
     }
+
+    memcpy(&this->bytes[pos], &info_hash_bytes, 20);
+    pos += 20;
 
     strcpy(&this->bytes[pos], peer_id);
     pos += strlen(peer_id);
+
+    debug("%s", this->bytes);
 	
 	return EXIT_SUCCESS;
 }
@@ -105,7 +109,6 @@ error:
 
 int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_response[2048], ssize_t res_size)
 {
-    /*
 	size_t pos = 0;
 
 	memcpy(&this->pstrlen, &raw_response[pos], sizeof(int8_t));
@@ -119,9 +122,7 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 	memcpy(this->peer_id, &raw_response[48], 20);
 	pos += 48;
 
-	//debug("%s", this->pstr);
 	debug("%s", this->peer_id);
-    */
 
 	return EXIT_SUCCESS;
 }
