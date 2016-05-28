@@ -26,6 +26,8 @@ struct Peer_Extended_Handshake_Response {
     void (*destroy) (Peer_Extended_Handshake_Response *this);
 
     int metadata_size;
+    int num_pieces;
+    int piece_size;
 };
 
 Peer_Extended_Handshake_Response *Peer_Extended_Handshake_Response_new (size_t size, char raw_response[2048], ssize_t res_size);

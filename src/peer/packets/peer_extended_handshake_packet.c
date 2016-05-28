@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <math.h>
 #include "utils/net/net_utils.h"
 #include "peer/packets/peer_extended_handshake_packet.h"
 
@@ -112,6 +113,9 @@ int Peer_Extended_Handshake_Response_init(Peer_Extended_Handshake_Response *this
         }
 
         this->metadata_size = atoi(buffer);
+        this->piece_size = 16*1024;
+        this->num_pieces = this->metadata_size/this->piece_size;
+
     } else {
         this->metadata_size = 0;
     }

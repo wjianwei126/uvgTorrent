@@ -146,6 +146,8 @@ int Peer_extended_handshake(Peer *this){
                 success = 1;
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
                 debug("metadata_size :: %i", extended_handshake->response->metadata_size);
+                debug("num_pieces :: %i", extended_handshake->response->num_pieces);
+                debug("piece_size :: %i", extended_handshake->response->piece_size);
             }
         }
     } else {
