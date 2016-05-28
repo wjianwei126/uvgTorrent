@@ -258,9 +258,9 @@ int Torrent_connect(Torrent *this)
         curr = curr->next;
     }
 
-    assert(success == 1, "%d out of %d trackers connected", this->connected_trackers, this->trackers->count + 1);
+    assert(success == 1, "%d out of %d trackers connected", this->connected_trackers, this->trackers->count);
 
-    log_info(KGRN "%d out of %d trackers connected" KBLU, this->connected_trackers, this->trackers->count + 1);
+    log_info(KGRN "%d out of %d trackers connected" KBLU, this->connected_trackers, this->trackers->count);
 
     return EXIT_SUCCESS;
 

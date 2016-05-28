@@ -206,7 +206,7 @@ error:
 * PURPOSE : copy socket response into output
 * RETURN  : success bool
 */
-ssize_t Socket_receive(Socket *this, char buffer[2048])
+ssize_t Socket_receive(Socket *this, char buffer[2048], int read_size)
 {
     int fd = *this->sock_desc;
     struct sockaddr_storage src_addr;
@@ -214,8 +214,8 @@ ssize_t Socket_receive(Socket *this, char buffer[2048])
     socklen_t src_addr_len=sizeof(src_addr);
 
     if(this->type == SOCKET_TYPE_UDP){
-        ssize_t count=recvfrom(fd,buffer,2048,0,(struct sockaddr*)&src_addr,&src_addr_len);
-        if (count==2048) {
+        ssize_t count=recvfrom(fd,buffer,read_size,0,(struct sockaddr*)&src_addr,&src_addr_len);
+        if (count==read_size) {
             log_warn("datagram too large for buffer: truncated");
         } else {
             if (count == -1) {
@@ -225,9 +225,9 @@ ssize_t Socket_receive(Socket *this, char buffer[2048])
 
         return count;
     } else if(this->type == SOCKET_TYPE_TCP) {
-        ssize_t count=recv(fd,buffer,68,0);
-        debug("%i", count);
-        if (count==2048) {
+        ssize_t count=recv(fd,buffer,read_size,0);
+        
+        if (count > read_size) {
             log_warn("datagram too large for buffer: truncated");
         } else {
             if (count == -1) {

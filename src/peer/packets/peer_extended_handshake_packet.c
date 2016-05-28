@@ -51,7 +51,6 @@ int Peer_Extended_Handshake_Request_init(Peer_Extended_Handshake_Request *this)
     memcpy(&this->bytes[pos], bencoded_message, strlen(bencoded_message));
     pos += strlen(bencoded_message);
 
-    debug("POS :: %i", pos);
 	return EXIT_SUCCESS;
 }
 
@@ -91,25 +90,28 @@ error:
 
 int Peer_Extended_Handshake_Response_init(Peer_Extended_Handshake_Response *this, char raw_response[2048], ssize_t res_size)
 {
-    debug("EXTENDED RESPONSE :: %s", &raw_response[6]);
-    /*
-	size_t pos = 0;
+    char * bencoded_response = &raw_response[6];
+    char * metadata_key = "metadata_sizei";
+    
+    char * metadata_size_str = strstr(bencoded_response, metadata_key);
+    int position =  metadata_size_str - bencoded_response;
 
-	memcpy(&this->pstrlen, &raw_response[pos], sizeof(int8_t));
-	pos += sizeof(int8_t);
+    bencoded_response = bencoded_response + position + strlen(metadata_key);
+    char buffer[10];
 
-	this->pstr = calloc(1, 19);
-	memcpy(this->pstr, &raw_response[pos], 19);
-	pos += 19;
+    int i;
 
-	this->peer_id = calloc(1, 20);
-	memcpy(this->peer_id, &raw_response[48], 20);
-	pos += 48;
+    for (i = 0; i < 10; i++){
+        if (bencoded_response[i] != 'e'){
+            buffer[i] = bencoded_response[i];
+        } else {
+            buffer[i] = '\0';
+            break;
+        }
+    }
 
-	//debug("%s", this->pstr);
-	debug("%s", this->peer_id);
-    */
-
+    this->metadata_size = atoi(buffer);
+    
 	return EXIT_SUCCESS;
 }
 
@@ -187,7 +189,7 @@ int Peer_Extended_Handshake_Packet_send (Peer_Extended_Handshake_Packet *this, S
 int Peer_Extended_Handshake_Packet_receive (Peer_Extended_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
-    ssize_t packet_size = socket->receive(socket, out);
+    ssize_t packet_size = socket->receive(socket, out, 200);
     
     if(packet_size > 0){
     	/* prepare request */

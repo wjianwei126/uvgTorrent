@@ -67,8 +67,6 @@ int Peer_Handshake_Request_init(Peer_Handshake_Request *this, char * info_hash, 
 
     strcpy(&this->bytes[pos], peer_id);
     pos += strlen(peer_id);
-
-    debug("%s", this->bytes);
 	
 	return EXIT_SUCCESS;
 }
@@ -121,8 +119,6 @@ int Peer_Handshake_Response_init(Peer_Handshake_Response *this, char raw_respons
 	this->peer_id = calloc(1, 20);
 	memcpy(this->peer_id, &raw_response[48], 20);
 	pos += 48;
-
-	debug("%s", this->peer_id);
 
 	return EXIT_SUCCESS;
 }
@@ -202,7 +198,7 @@ int Peer_Handshake_Packet_send (Peer_Handshake_Packet *this, Socket * socket)
 int Peer_Handshake_Packet_receive (Peer_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
-    ssize_t packet_size = socket->receive(socket, out);
+    ssize_t packet_size = socket->receive(socket, out, 68);
     
     if(packet_size > 0){
     	/* prepare request */

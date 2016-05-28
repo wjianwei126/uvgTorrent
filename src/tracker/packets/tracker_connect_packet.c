@@ -177,7 +177,7 @@ int Tracker_Connect_Packet_send (Tracker_Connect_Packet *this, Socket * socket)
 int Tracker_Connect_Packet_receive (Tracker_Connect_Packet *this, Socket * socket)
 {
 	char out[2048];
-    ssize_t packet_size = socket->receive(socket, out);
+    ssize_t packet_size = socket->receive(socket, out, 2048);
 
     if(packet_size != -1){
     	/* prepare request */

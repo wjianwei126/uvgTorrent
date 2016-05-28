@@ -144,6 +144,7 @@ int Peer_extended_handshake(Peer *this){
         if(result == EXIT_SUCCESS){
             success = 1;
             fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+            debug("metadata_size :: %i", extended_handshake->response->metadata_size);
         }
     } else {
         goto error;
