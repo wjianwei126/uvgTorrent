@@ -35,7 +35,7 @@ int Peer_Extended_Handshake_Request_init(Peer_Extended_Handshake_Request *this)
 {
     char * bencoded_message = "d1:md11:ut_metadatai1eee";
     
-    uint32_t length = net_utils.htonl(26);
+    uint32_t length = net_utils.htonl(strlen(bencoded_message));
     uint8_t bt_msg_id = 20;
     uint8_t handshake_id = 0; 
 
@@ -51,7 +51,7 @@ int Peer_Extended_Handshake_Request_init(Peer_Extended_Handshake_Request *this)
 
     memcpy(&this->bytes[pos], bencoded_message, strlen(bencoded_message));
     pos += strlen(bencoded_message);
-
+    
 	return EXIT_SUCCESS;
 }
 
@@ -92,6 +92,7 @@ error:
 int Peer_Extended_Handshake_Response_init(Peer_Extended_Handshake_Response *this, char raw_response[2048], ssize_t res_size)
 {
     char * bencoded_response = &raw_response[6];
+
     char * metadata_key = "metadata_sizei";
     
     char * metadata_size_str = strstr(bencoded_response, metadata_key);
@@ -118,6 +119,34 @@ int Peer_Extended_Handshake_Response_init(Peer_Extended_Handshake_Response *this
 
     } else {
         this->metadata_size = 0;
+    }
+
+    bencoded_response = &raw_response[6];
+    
+    metadata_key = "ut_metadatai";
+    
+    char * ut_metadata_str = strstr(bencoded_response, metadata_key);
+    position =  ut_metadata_str - bencoded_response;
+
+    if(position < res_size){
+        bencoded_response = bencoded_response + position + strlen(metadata_key);
+        char buffer[10];
+
+        int i;
+
+        for (i = 0; i < 10; i++){
+            if (bencoded_response[i] != 'e'){
+                buffer[i] = bencoded_response[i];
+            } else {
+                buffer[i] = '\0';
+                break;
+            }
+        }
+
+        this->ut_metadata = atoi(buffer);
+
+    } else {
+        this->ut_metadata = 0;
     }
 
     return EXIT_SUCCESS;
@@ -197,7 +226,7 @@ int Peer_Extended_Handshake_Packet_send (Peer_Extended_Handshake_Packet *this, S
 int Peer_Extended_Handshake_Packet_receive (Peer_Extended_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
-    ssize_t packet_size = socket->receive(socket, out, 200);
+    ssize_t packet_size = socket->receive(socket, out, 2048);
     
     if(packet_size > 0){
     	/* prepare request */

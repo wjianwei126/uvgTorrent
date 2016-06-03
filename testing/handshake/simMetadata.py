@@ -2,11 +2,13 @@
 # encoding: utf-8
 import socket
 import math
+from random import randint
 from struct import pack, unpack
 from socket import inet_ntoa
 from threading import Timer, Thread
 from time import sleep, time
 from hashlib import sha1
+import random
 #from simDHT import entropy
 from bencode import bencode, bdecode
 
@@ -14,9 +16,12 @@ BT_PROTOCOL = "BitTorrent protocol"
 BT_MSG_ID = 20
 EXT_HANDSHAKE_ID = 0
 
+def entropy(length):
+    return "".join(chr(randint(0, 255)) for _ in xrange(length))
+
 def random_id():
     hash = sha1()
-    #hash.update(entropy(20))
+    hash.update(entropy(20))
     return hash.digest()
 
 def send_packet(the_socket, msg):
@@ -24,6 +29,7 @@ def send_packet(the_socket, msg):
 
 def send_message(the_socket, msg):
     msg_len = pack(">I", len(msg))
+    print(msg_len + msg)
     send_packet(the_socket, msg_len + msg)
 
 def send_handshake(the_socket, infohash):
@@ -32,6 +38,7 @@ def send_handshake(the_socket, infohash):
     peer_id = random_id()
     packet = bt_header + ext_bytes + infohash + peer_id
 
+    print('bytearray', bytearray(packet))
     send_packet(the_socket, packet)
 
 def check_handshake(packet, self_infohash):
@@ -121,16 +128,16 @@ def download_metadata(address, infohash, timeout=5):
 
         # request each piece of metadata
         metadata = []
+        with open('test.txt', 'w') as f:
+                f.write("")
         for piece in range(int(math.ceil(metadata_size/(16.0*1024)))):
             request_metadata(the_socket, ut_metadata, piece)
             packet = the_socket.recv(1024*17) #recvall(the_socket, timeout) #the_socket.recv(1024*17) #
+            with open('test.txt', 'a') as f:
+                f.write(packet)
             metadata.append(packet[packet.index("ee")+2:])
 
         metadata = "".join(metadata)
-        print(bdecode(metadata)["files"])
-        print bdecode(metadata)["name"], "size: ", len(metadata)
-        # with open(infohash.encode("hex")+'.txt', 'w') as f:
-        #     f.write(metadata)
         # print 'write metadata, length:', len(metadata)
 
     except socket.timeout:
@@ -140,5 +147,8 @@ def download_metadata(address, infohash, timeout=5):
 
     finally:
         the_socket.close()
+
+        print(bdecode(metadata)["files"])
+        print bdecode(metadata)["name"], "size: ", len(metadata)
 
 download_metadata(("127.0.0.1", 51413), "9609f0336566953f3bf342241b25e2437f65b2c8".decode("hex"))

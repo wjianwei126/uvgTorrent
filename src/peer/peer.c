@@ -7,6 +7,7 @@
 #include "peer/peer.h"
 #include "peer/packets/peer_handshake_packet.h"
 #include "peer/packets/peer_extended_handshake_packet.h"
+#include "peer/packets/peer_piece_packet.h"
 
 Peer *Peer_new(size_t size, char *ip, uint16_t port)
 {
@@ -145,9 +146,28 @@ int Peer_extended_handshake(Peer *this){
             if(extended_handshake->response->metadata_size != 0){
                 success = 1;
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+                debug("ut_metadata :: %i", extended_handshake->response->ut_metadata);
                 debug("metadata_size :: %i", extended_handshake->response->metadata_size);
                 debug("num_pieces :: %i", extended_handshake->response->num_pieces);
                 debug("piece_size :: %i", extended_handshake->response->piece_size);
+
+                Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, 0);
+                success = 0;
+
+                if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
+                    debug("SENT");
+                    result = piece_packet->receive(piece_packet, this->socket);
+
+
+                    //char out2[2048] = {0};
+                    //ssize_t packet_size = this->socket->receive(this->socket, out2, 2048);
+                    //debug("%zu", packet_size);
+                    // left over bits?
+
+                    if(result == EXIT_SUCCESS){
+                        
+                    }
+                }
             }
         }
     } else {

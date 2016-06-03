@@ -25,6 +25,7 @@ struct Peer_Extended_Handshake_Response {
     void (*print) (Peer_Extended_Handshake_Response *this);
     void (*destroy) (Peer_Extended_Handshake_Response *this);
 
+    int ut_metadata;
     int metadata_size;
     int num_pieces;
     int piece_size;
