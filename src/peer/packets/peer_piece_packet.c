@@ -232,14 +232,13 @@ int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
 {
 	char out[2048] = {0};
     ssize_t packet_size = socket->receive(socket, out, 2048);
-    while(1){
+
         debug("trying to get message contents");
         char out2[2048] = {0};
-        packet_size = socket->receive(socket, out2, 50);
+        packet_size = socket->receive(socket, out2, 2048);
 
         debug("%zu", packet_size);
         debug("%s", out2);
-    }
 
     if(packet_size > 0){
     	/* prepare request */
