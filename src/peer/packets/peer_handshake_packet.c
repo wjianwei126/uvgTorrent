@@ -198,7 +198,7 @@ int Peer_Handshake_Packet_send (Peer_Handshake_Packet *this, Socket * socket)
 int Peer_Handshake_Packet_receive (Peer_Handshake_Packet *this, Socket * socket)
 {
 	char out[2048];
-    ssize_t packet_size = socket->receive(socket, out, 68);
+    ssize_t packet_size = socket->receive(socket, out, 2048);
     
     if(packet_size > 0){
     	/* prepare request */

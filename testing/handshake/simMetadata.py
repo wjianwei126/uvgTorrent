@@ -30,6 +30,7 @@ def send_packet(the_socket, msg):
 def send_message(the_socket, msg):
     msg_len = pack(">I", len(msg))
     print(msg_len + msg)
+    print('bytearray', bytearray(msg_len + msg))
     send_packet(the_socket, msg_len + msg)
 
 def send_handshake(the_socket, infohash):
