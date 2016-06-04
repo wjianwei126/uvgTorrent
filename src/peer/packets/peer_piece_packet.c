@@ -203,7 +203,7 @@ int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
     debug("packet size %zu", packet_size);
     
     debug("%zu", packet_size);
-    debug("%s", &out[10]);
+    debug("%s", &out[6]);
 
     if(packet_size > 0){
     	/* prepare request */
