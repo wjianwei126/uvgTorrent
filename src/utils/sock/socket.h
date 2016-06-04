@@ -17,7 +17,7 @@ struct Socket {
     
     int (*connect)(Socket *this);
     int (*send)(Socket *this, void * message, size_t message_size);
-    ssize_t (*receive)(Socket *this, char buffer[2048], int read_size);
+    ssize_t (*receive)(Socket *this, void * buffer, int read_size);
 
     char * ip;
     int * port;
@@ -36,6 +36,6 @@ void Socket_print(Socket *this);
 
 int Socket_connect(Socket *this);
 int Socket_send(Socket *this, void * message, size_t message_size);
-ssize_t Socket_receive(Socket *this, char buffer[2048], int read_size);
+ssize_t Socket_receive(Socket *this, void * buffer, int read_size);
 
 #endif

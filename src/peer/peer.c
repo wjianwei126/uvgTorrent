@@ -155,14 +155,7 @@ int Peer_extended_handshake(Peer *this){
                 success = 0;
 
                 if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
-                    debug("SENT");
                     result = piece_packet->receive(piece_packet, this->socket);
-
-
-                    //char out2[2048] = {0};
-                    //ssize_t packet_size = this->socket->receive(this->socket, out2, 2048);
-                    //debug("%zu", packet_size);
-                    // left over bits?
 
                     if(result == EXIT_SUCCESS){
                         

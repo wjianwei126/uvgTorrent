@@ -33,8 +33,10 @@ error:
 
 int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
 {
-    char * bencoded_message = "d8:msg_typei0e5:piecei0ee\0";
-
+    char * bencoded_message_format = "d8:msg_typei0e5:piecei%iee\0";
+    char bencoded_message[25];
+    sprintf(bencoded_message, bencoded_message_format, piece_num);
+    
     uint32_t length = net_utils.htonl(strlen(bencoded_message) + 2);
     uint8_t bt_msg_id = 20;
     uint8_t ut_metadata = 3;
@@ -198,18 +200,14 @@ int Peer_Piece_Packet_send (Peer_Piece_Packet *this, Socket * socket)
 
 int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
 {
-	char out[2048] = {0};
-    ssize_t packet_size = socket->receive(socket, out, 2048);
-    debug("packet size %zu", packet_size);
-    
-    debug("%zu", packet_size);
-    debug("%s", &out[6]);
+	char out[17*2048] = {0};
+    ssize_t packet_size = socket->receive(socket, out, 17*2048);
 
     if(packet_size > 0){
     	/* prepare request */
-		//this->response = NEW(Peer_Piece_Response, out, packet_size);
+		this->response = NEW(Peer_Piece_Response, out, packet_size);
 
-		//check_mem(this->response);
+		check_mem(this->response);
 
     	return EXIT_SUCCESS;
     } else {

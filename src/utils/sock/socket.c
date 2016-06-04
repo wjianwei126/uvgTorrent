@@ -211,7 +211,7 @@ error:
 * PURPOSE : copy socket response into output
 * RETURN  : success bool
 */
-ssize_t Socket_receive(Socket *this, char buffer[2048], int read_size)
+ssize_t Socket_receive(Socket *this, void * buffer, int read_size)
 {
     int fd = *this->sock_desc;
     struct sockaddr_storage src_addr;
