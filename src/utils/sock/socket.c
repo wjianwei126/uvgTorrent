@@ -134,13 +134,15 @@ int Socket_connect(Socket *this)
 
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
-    } else {
-        timeout.tv_sec = 5;  /* 30 Secs Timeout */
+    } /*
+    else {
+        timeout.tv_sec = 10; 
         timeout.tv_usec = 0;
 
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
     }
+    */
 
     if(this->type == SOCKET_TYPE_UDP){
         memset((void *)&localaddr, 0, sizeof(localaddr));
@@ -229,7 +231,7 @@ ssize_t Socket_receive(Socket *this, char buffer[2048], int read_size)
         return count;
     } else if(this->type == SOCKET_TYPE_TCP) {
         ssize_t count=recv(fd,buffer,read_size,0);
-        debug("COUNT :: %zu", count);
+        
         if (count > read_size) {
             log_warn("datagram too large for buffer: truncated");
         } else {
@@ -264,7 +266,9 @@ int Socket_send(Socket *this, void * message, size_t message_size)
             throw("send failed");
         }
     } else if(this->type == SOCKET_TYPE_TCP) {
-        if (send(*this->sock_desc, message, message_size, 0) == -1){
+        ssize_t sent = send(*this->sock_desc, message, message_size, 0);
+        if (sent == -1){
+            debug("SEND FAILED");
             // throw("send failed");
             errno=0;
             goto error;

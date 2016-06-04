@@ -31,6 +31,10 @@ def send_message(the_socket, msg):
     msg_len = pack(">I", len(msg))
     print(msg_len + msg)
     print('bytearray', bytearray(msg_len + msg))
+
+    with open('messages.txt', 'wb') as f:
+        f.write(msg_len + msg)
+
     send_packet(the_socket, msg_len + msg)
 
 def send_handshake(the_socket, infohash):
@@ -38,7 +42,6 @@ def send_handshake(the_socket, infohash):
     ext_bytes = "\x00\x00\x00\x00\x00\x10\x00\x00"
     peer_id = random_id()
     packet = bt_header + ext_bytes + infohash + peer_id
-
     print('bytearray', bytearray(packet))
     send_packet(the_socket, packet)
 
@@ -130,7 +133,7 @@ def download_metadata(address, infohash, timeout=5):
         # request each piece of metadata
         metadata = []
         with open('test.txt', 'w') as f:
-                f.write("")
+            f.write("")
         for piece in range(int(math.ceil(metadata_size/(16.0*1024)))):
             request_metadata(the_socket, ut_metadata, piece)
             packet = the_socket.recv(1024*17) #recvall(the_socket, timeout) #the_socket.recv(1024*17) #

@@ -35,7 +35,7 @@ int Peer_Extended_Handshake_Request_init(Peer_Extended_Handshake_Request *this)
 {
     char * bencoded_message = "d1:md11:ut_metadatai1eee";
     
-    uint32_t length = net_utils.htonl(strlen(bencoded_message));
+    uint32_t length = net_utils.htonl(26);
     uint8_t bt_msg_id = 20;
     uint8_t handshake_id = 0; 
 

@@ -38,7 +38,7 @@
             if (i == 5){
                 message[pos] = '\x10';
             } else {
-                message[pos] = (char)0;
+                message[pos] = '\x00';
             }
             pos += 1;
         }
@@ -159,46 +159,15 @@ while (1) {
         memcpy(&meta_message[pos], bencoded_message, strlen(bencoded_message));
         pos += strlen(bencoded_message);
 
-        /*meta_message[0] = '\x00';
-        meta_message[1] = '\x00';
-        meta_message[2] = '\x00';
-        meta_message[3] = '\x1a';
-        meta_message[4] = '\x14';
-        meta_message[5] = '\x00';
-        meta_message[6] = 'd';
-        meta_message[7] = '1';
-        meta_message[8] = ':';
-        meta_message[9] = 'm';
-        meta_message[10] = 'd';
-        meta_message[11] = '1';
-        meta_message[12] = '1';
-        meta_message[13] = ':';
-        meta_message[14] = 'u';
-        meta_message[15] = 't';
-        meta_message[16] = '_';
-        meta_message[17] = 'm';
-        meta_message[18] = 'e';
-        meta_message[19] = 't';
-        meta_message[20] = 'a';
-        meta_message[21] = 'd';
-        meta_message[22] = 'a';
-        meta_message[23] = 't';
-        meta_message[24] = 'a';
-        meta_message[25] = 'i';
-        meta_message[26] = '1';
-        meta_message[27] = 'e';
-        meta_message[28] = 'e';
-        meta_message[29] = 'e';*/
-
         if (send(sockfd, &meta_message, 30, 0) == -1){
               //perror("send");
               //exit (1);
         }
         printf("After the metadata function \n");
-        char metadata[101];
+        char metadata[500];
         numbytes = -1;
         while (numbytes < 0){
-            if ((numbytes=recv(sockfd, metadata, 100, 0)) == -1) {
+            if ((numbytes=recv(sockfd, metadata, 500, 0)) == -1) {
                         //perror("recv");
                         //exit(1);
             } else {
@@ -207,7 +176,70 @@ while (1) {
         }
 
         printf("numbytes :: %i \n", numbytes);
-        printf("got message: %s \n", &metadata[10]);
+        printf("got message: %s \n", &metadata[6]);
+
+
+        char meta_piece[31];
+        meta_piece[0] = '\x00';
+        meta_piece[1] = '\x00';
+        meta_piece[2] = '\x00';
+        meta_piece[3] = '\x1b';
+        meta_piece[4] = '\x14';
+        meta_piece[5] = '\x03';
+        meta_piece[6] = 'd';
+        meta_piece[7] = '8';
+        meta_piece[8] = ':';
+        meta_piece[9] = 'm';
+        meta_piece[10] = 's';
+        meta_piece[11] = 'g';
+        meta_piece[12] = '_';
+        meta_piece[13] = 't';
+        meta_piece[14] = 'y';
+        meta_piece[15] = 'p';
+        meta_piece[16] = 'e';
+        meta_piece[17] = 'i';
+        meta_piece[18] = '0';
+        meta_piece[19] = 'e';
+        meta_piece[20] = '5';
+        meta_piece[21] = ':';
+        meta_piece[22] = 'p';
+        meta_piece[23] = 'i';
+        meta_piece[24] = 'e';
+        meta_piece[25] = 'c';
+        meta_piece[26] = 'e';
+        meta_piece[27] = 'i';
+        meta_piece[28] = '0';
+        meta_piece[29] = 'e';
+        meta_piece[30] = 'e';  
+
+        if (send(sockfd, &meta_piece, 31, 0) == -1){
+              //perror("send");
+              //exit (1);
+        }
+        printf("piece sent \n");
+        char metadata2[4096] = {0};
+        numbytes = -1;
+        printf("numbytes :: %i \n", numbytes);
+        while (numbytes < 0){
+            if ((numbytes=recv(sockfd, metadata2, 4096, 0)) == -1) {
+                        //perror("recv");
+                        //exit(1);
+            } else {
+                break;
+            }    
+        }
+
+        printf("numbytes :: %i \n", numbytes);
+
+        int i;
+
+        for(i = 0; i < 200; i++){
+            printf("%c", metadata2[i]);
+        }
+
+        printf("\n");
+        printf("\n");
+        printf("\n");
 
         close(sockfd);
         sleep(1);

@@ -225,20 +225,17 @@ void Peer_Piece_Packet_print (Peer_Piece_Packet *this)
 
 int Peer_Piece_Packet_send (Peer_Piece_Packet *this, Socket * socket)
 {
-    return socket->send(socket, &this->request->bytes, sizeof(this->request->bytes));
+    return socket->send(socket, &this->request->bytes, 31);//sizeof(this->request->bytes));
 }
 
 int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
 {
 	char out[2048] = {0};
     ssize_t packet_size = socket->receive(socket, out, 2048);
-
-        debug("trying to get message contents");
-        char out2[2048] = {0};
-        packet_size = socket->receive(socket, out2, 2048);
-
-        debug("%zu", packet_size);
-        debug("%s", out2);
+    debug("packet size %zu", packet_size);
+    
+    debug("%zu", packet_size);
+    debug("%s", &out[10]);
 
     if(packet_size > 0){
     	/* prepare request */
