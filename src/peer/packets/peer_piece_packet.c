@@ -33,9 +33,9 @@ error:
 
 int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
 {
-    /*char * bencoded_message = "d8:msg_typei0e5:piecei0ee";
+    char * bencoded_message = "d8:msg_typei0e5:piecei0ee\0";
 
-    uint32_t length = net_utils.htonl(strlen(bencoded_message));
+    uint32_t length = net_utils.htonl(strlen(bencoded_message) + 2);
     uint8_t bt_msg_id = 20;
     uint8_t ut_metadata = 3;
 
@@ -50,39 +50,7 @@ int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
     pos += sizeof(uint8_t);
 
     memcpy(&this->bytes[pos], bencoded_message, strlen(bencoded_message));
-    pos += strlen(bencoded_message);*/
-
-    this->bytes[0] = '\x00';
-    this->bytes[1] = '\x00';
-    this->bytes[2] = '\x00';
-    this->bytes[3] = '\x1b';
-    this->bytes[4] = '\x14';
-    this->bytes[5] = '\x03';
-    this->bytes[6] = 'd';
-    this->bytes[7] = '8';
-    this->bytes[8] = ':';
-    this->bytes[9] = 'm';
-    this->bytes[10] = 's';
-    this->bytes[11] = 'g';
-    this->bytes[12] = '_';
-    this->bytes[13] = 't';
-    this->bytes[14] = 'y';
-    this->bytes[15] = 'p';
-    this->bytes[16] = 'e';
-    this->bytes[17] = 'i';
-    this->bytes[18] = '0';
-    this->bytes[19] = 'e';
-    this->bytes[20] = '5';
-    this->bytes[21] = ':';
-    this->bytes[22] = 'p';
-    this->bytes[23] = 'i';
-    this->bytes[24] = 'e';
-    this->bytes[25] = 'c';
-    this->bytes[26] = 'e';
-    this->bytes[27] = 'i';
-    this->bytes[28] = '0';
-    this->bytes[29] = 'e';
-    this->bytes[30] = 'e';
+    pos += strlen(bencoded_message);
 
 	return EXIT_SUCCESS;
 }
