@@ -20,6 +20,7 @@ Peer *Peer_new(size_t size, char *ip, uint16_t port)
 
     Peer->handshake = Peer_handshake;
     Peer->extended_handshake = Peer_extended_handshake;
+    Peer->get_metadata = Peer_get_metadata;
 
     if(Peer->init(Peer, ip, port) == EXIT_FAILURE) {
         throw("Peer init failed");
@@ -145,22 +146,19 @@ int Peer_extended_handshake(Peer *this){
         if(result == EXIT_SUCCESS){
             if(extended_handshake->response->metadata_size != 0){
                 success = 1;
+                
+                this->ut_metadata = extended_handshake->response->ut_metadata;
+                this->metadata_size = extended_handshake->response->metadata_size;
+                this->num_pieces = extended_handshake->response->num_pieces;
+                this->piece_size = extended_handshake->response->piece_size;
+
                 fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+
+
                 debug("ut_metadata :: %i", extended_handshake->response->ut_metadata);
                 debug("metadata_size :: %i", extended_handshake->response->metadata_size);
                 debug("num_pieces :: %i", extended_handshake->response->num_pieces);
                 debug("piece_size :: %i", extended_handshake->response->piece_size);
-
-                Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, 0);
-                success = 0;
-
-                if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
-                    result = piece_packet->receive(piece_packet, this->socket);
-
-                    if(result == EXIT_SUCCESS){
-                        
-                    }
-                }
             }
         }
     } else {
@@ -178,4 +176,27 @@ error:
     if(extended_handshake) { extended_handshake->destroy(extended_handshake); };
     fprintf(stderr, " %s✘%s\n", KRED, KNRM);
     return EXIT_FAILURE;
+}
+
+int Peer_get_metadata(Peer *this, char * out, int metadata_size)
+{
+    debug("ut_metadata :: %i", this->ut_metadata);
+    debug("metadata_size :: %i", metadata_size);
+    debug("num_pieces :: %i", this->num_pieces);
+    debug("piece_size :: %i", this->piece_size);
+
+    Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, 0);
+    int success = 0;
+
+    if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
+        int result = piece_packet->receive(piece_packet, this->socket);
+
+        if(result == EXIT_SUCCESS){
+            
+        }
+
+        return result;
+    } else {
+        return EXIT_FAILURE;
+    }
 }
