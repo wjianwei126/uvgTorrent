@@ -120,16 +120,18 @@ int Peer_Piece_Response_init(Peer_Piece_Response *this, char raw_response[2048],
     while(curr){
         Hashmap * file = (Hashmap *)curr->get(curr);
 
-        //int * length = file->get(file, "length");
-        int * path = file->get(file, "path");
-        debug("done");
-        //Linkednode * path_curr = path->head;
+        int * length = file->get(file, "length");
 
-        //while(path_curr){
-            // char * path = path_curr->get(path_curr);
-            // debug("path_part :: %s", path);
-        //    path_curr = path_curr->next;
-        //}
+        Linkedlist * path = file->get(file, "path");
+
+        Linkednode * path_curr = path->head;
+        char * path_str;
+        while(path_curr){
+            path_str = path_curr->get(path_curr);
+            path_curr = path_curr->next;
+        }
+
+        debug("FILE FOUND :: %s SIZE :: %i", path_str, *length);
 
         curr = curr->next;
     }
