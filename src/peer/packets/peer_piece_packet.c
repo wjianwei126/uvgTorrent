@@ -105,9 +105,10 @@ int Peer_Piece_Response_init(Peer_Piece_Response *this, char raw_response[2048],
     memcpy(&bencoded_response[0], &raw_response[6], length);
     bencoded_response[length] = '\0';
 
-    this->response = malloc(strlen(bencoded_response));
-    memcpy(this->response, &bencoded_response[0], strlen(bencoded_response));
-
+    this->response = malloc(length + 1);
+    memcpy(this->response, &bencoded_response[0], length);
+    
+    this->response_len = length;
 
     /*
     char * test = "d5:filesld6:lengthi439837573e4:pathl44:Game.of.Thrones.S05E10.HDTV.x264-KILLERS.mp4eed6:lengthi172e4:pathl43:Torrent-Downloaded-From-extratorrent.cc.txteed6:lengthi10869e4:pathl44:game.of.thrones.s05e10.hdtv.x264-killers.nfoeee4:name46:Game.of.Thrones.S05E10.HDTV.x264-KILLERS[ettv]12:piece lengthi262144e\0";

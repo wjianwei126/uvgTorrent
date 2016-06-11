@@ -8,6 +8,9 @@
 #include "peer/packets/peer_handshake_packet.h"
 #include "peer/packets/peer_extended_handshake_packet.h"
 #include "peer/packets/peer_piece_packet.h"
+#include "data_structures/linkedlist/linkedlist.h"
+#include "data_structures/hashmap/hashmap.h"
+#include "utils/bencode/bencode.h"
 
 Peer *Peer_new(size_t size, char *ip, uint16_t port)
 {
@@ -181,8 +184,10 @@ error:
 int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 {
     int piece = 0;
+    char meta_data[metadata_size + 1];
+    int metadata_pos = 0;
 
-    for (piece = 0; piece <= this->num_pieces; piece++){
+    for (piece = 0; piece < this->num_pieces; piece++){
         Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
         int success = 0;
 
@@ -190,7 +195,9 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
             int result = piece_packet->receive(piece_packet, this->socket);
             
             if(result == EXIT_SUCCESS){
-                
+                debug("response len %i", piece_packet->response->response_len);
+                memcpy(&meta_data[metadata_pos], piece_packet->response->response, piece_packet->response->response_len);
+                metadata_pos += piece_packet->response->response_len;
             }
 
             piece_packet->destroy(piece_packet);
@@ -199,5 +206,38 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
             //return EXIT_FAILURE;
         }
     }
+
+    meta_data[metadata_pos] = '\0';
+
+    bencode_t * bencoded = malloc(sizeof(bencode_t));
+    bencode_init(
+        bencoded,
+        &meta_data[0],
+        metadata_pos);
+    
+    Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
+    const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
+    Linkednode * curr = files->head;
+
+    while(curr){
+        Hashmap * file = (Hashmap *)curr->get(curr);
+
+        int * length = file->get(file, "length");
+
+        Linkedlist * path = file->get(file, "path");
+
+        Linkednode * path_curr = path->head;
+        char * path_str;
+        while(path_curr){
+            path_str = path_curr->get(path_curr);
+            debug("%s", path_str);
+            path_curr = path_curr->next;
+        }
+
+        debug("FILE FOUND :: %s SIZE :: %i", path_str, *length);
+
+        curr = curr->next;
+    }
+
     return EXIT_FAILURE;
 }

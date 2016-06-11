@@ -28,6 +28,7 @@ struct Peer_Piece_Response {
     void (*destroy) (Peer_Piece_Response *this);
 
 	char * response;
+	int response_len;
 };
 
 Peer_Piece_Response *Peer_Piece_Response_new (size_t size, char raw_response[2048], ssize_t res_size);
