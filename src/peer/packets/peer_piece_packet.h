@@ -27,9 +27,7 @@ struct Peer_Piece_Response {
     void (*print) (Peer_Piece_Response *this);
     void (*destroy) (Peer_Piece_Response *this);
 
-	int8_t pstrlen;
-	char * pstr;
-	char * peer_id;
+	char * response;
 };
 
 Peer_Piece_Response *Peer_Piece_Response_new (size_t size, char raw_response[2048], ssize_t res_size);
