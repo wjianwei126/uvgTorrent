@@ -180,23 +180,23 @@ error:
 
 int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 {
-    debug("ut_metadata :: %i", this->ut_metadata);
-    debug("metadata_size :: %i", metadata_size);
-    debug("num_pieces :: %i", this->num_pieces);
-    debug("piece_size :: %i", this->piece_size);
+    int piece = 0;
 
-    Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, 0);
-    int success = 0;
+    for (piece = 0; piece <= this->num_pieces; piece++){
+        Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
+        int success = 0;
 
-    if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
-        int result = piece_packet->receive(piece_packet, this->socket);
-
-        if(result == EXIT_SUCCESS){
+        if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
+            int result = piece_packet->receive(piece_packet, this->socket);
             
-        }
+            if(result == EXIT_SUCCESS){
+                
+            }
 
-        return result;
-    } else {
-        return EXIT_FAILURE;
+            //return result;
+        } else {
+            //return EXIT_FAILURE;
+        }
     }
+    return EXIT_FAILURE;
 }

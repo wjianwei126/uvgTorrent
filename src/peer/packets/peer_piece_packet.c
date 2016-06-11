@@ -7,7 +7,10 @@
 #include <inttypes.h>
 #include <math.h>
 #include "utils/net/net_utils.h"
+#include "utils/bencode/bencode.h"
 #include "peer/packets/peer_piece_packet.h"
+#include "data_structures/linkedlist/linkedlist.h"
+#include "data_structures/hashmap/hashmap.h"
 
 /* CONNECT REQUEST */
 Peer_Piece_Request * Peer_Piece_Request_new(size_t size, int piece_num)
@@ -36,7 +39,7 @@ int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
     char * bencoded_message_format = "d8:msg_typei0e5:piecei%iee\0";
     char bencoded_message[25];
     sprintf(bencoded_message, bencoded_message_format, piece_num);
-    
+
     uint32_t length = net_utils.htonl(strlen(bencoded_message) + 2);
     uint8_t bt_msg_id = 20;
     uint8_t ut_metadata = 3;
@@ -93,37 +96,43 @@ error:
 
 int Peer_Piece_Response_init(Peer_Piece_Response *this, char raw_response[2048], ssize_t res_size)
 {
-	char * bencoded_response = &raw_response[6];
-	debug("piece 0 :: %s", bencoded_response);
-    /*char * bencoded_response = &raw_response[6];
-    char * metadata_key = "metadata_sizei";
+	uint32_t length;
+    memcpy(&length, &raw_response[0], sizeof(uint32_t));
+    length = net_utils.ntohl(length);
+    length = length - 2;
+
+    char bencoded_response[length];
+    memcpy(&bencoded_response[0], &raw_response[6], length);
     
-    char * metadata_size_str = strstr(bencoded_response, metadata_key);
-    int position =  metadata_size_str - bencoded_response;
+    char * test = "d5:filesld6:lengthi439837573e4:pathl44:Game.of.Thrones.S05E10.HDTV.x264-KILLERS.mp4eed6:lengthi172e4:pathl43:Torrent-Downloaded-From-extratorrent.cc.txteed6:lengthi10869e4:pathl44:game.of.thrones.s05e10.hdtv.x264-killers.nfoeee4:name46:Game.of.Thrones.S05E10.HDTV.x264-KILLERS[ettv]12:piece lengthi262144e\0";
+    
 
-    if(position < res_size){
-        bencoded_response = bencoded_response + position + strlen(metadata_key);
-        char buffer[10];
+    bencode_t * bencoded = malloc(sizeof(bencode_t));
+    bencode_init(
+        bencoded,
+        &test[0],
+        strlen(test));
+    
+    Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
+    const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
+    Linkednode * curr = files->head;
 
-        int i;
+    while(curr){
+        Hashmap * file = (Hashmap *)curr->get(curr);
 
-        for (i = 0; i < 10; i++){
-            if (bencoded_response[i] != 'e'){
-                buffer[i] = bencoded_response[i];
-            } else {
-                buffer[i] = '\0';
-                break;
-            }
-        }
+        //int * length = file->get(file, "length");
+        int * path = file->get(file, "path");
+        debug("done");
+        //Linkednode * path_curr = path->head;
 
-        this->metadata_size = atoi(buffer);
-        this->piece_size = 16*1024;
-        this->num_pieces = this->metadata_size/this->piece_size;
+        //while(path_curr){
+            // char * path = path_curr->get(path_curr);
+            // debug("path_part :: %s", path);
+        //    path_curr = path_curr->next;
+        //}
 
-    } else {
-        this->metadata_size = 0;
-    }*/
-
+        curr = curr->next;
+    }
     return EXIT_SUCCESS;
 }
 

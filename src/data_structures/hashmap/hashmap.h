@@ -5,7 +5,7 @@
 #ifndef _hashtable_h
 #define _hashtable_h
 
-#define _MAX_HASHTABLE_KEYS 100
+#define _MAX_HASHTABLE_KEYS 10000 // reset to 100 to expose collision error path / length produce collision
 
 /* Hashmap */
 typedef struct Hashmap Hashmap;
