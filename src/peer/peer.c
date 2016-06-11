@@ -193,6 +193,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
                 
             }
 
+            piece_packet->destroy(piece_packet);
             //return result;
         } else {
             //return EXIT_FAILURE;
