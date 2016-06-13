@@ -104,6 +104,8 @@ int Peer_Piece_Response_init(Peer_Piece_Response *this, char raw_response[2048],
     char bencoded_response[length+1];
     memcpy(&bencoded_response[0], &raw_response[6], length);
     bencoded_response[length] = '\0';
+    
+    debug("%s", &bencoded_response[0]);
 
     char * find = "ee\0";
     char *result = strstr(&bencoded_response[0], find);

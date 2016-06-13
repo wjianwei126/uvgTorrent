@@ -134,15 +134,13 @@ int Socket_connect(Socket *this)
 
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
-    } /*
-    else {
-        timeout.tv_sec = 10; 
+    } else {
+        timeout.tv_sec = 3; 
         timeout.tv_usec = 0;
 
         setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, (struct timeval *)&timeout,sizeof(struct timeval));
         setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO,(struct timeval *)&timeout,sizeof(struct timeval));
     }
-    */
 
     if(this->type == SOCKET_TYPE_UDP){
         memset((void *)&localaddr, 0, sizeof(localaddr));

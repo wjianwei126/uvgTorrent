@@ -255,8 +255,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
                 int res = peer->handshake(peer, (char *) info_hash);
                 if(res == EXIT_SUCCESS) {
                     res = peer->extended_handshake(peer);
-                    char metadata[peer->metadata_size];
-                    res = peer->get_metadata(peer, metadata, peer->metadata_size);
+                    if(res == EXIT_SUCCESS) {
+                        char metadata[peer->metadata_size];
+                        res = peer->get_metadata(peer, metadata, peer->metadata_size);
+                    }
                 }
                 curr = curr->next;
             }
