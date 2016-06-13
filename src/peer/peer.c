@@ -164,18 +164,21 @@ int Peer_extended_handshake(Peer *this){
                 debug("num_pieces :: %i", extended_handshake->response->num_pieces);
                 debug("piece_size :: %i", extended_handshake->response->piece_size);
             }
+        } else {
+            
         }
     } else {
-        goto error;
+
     }
 
     extended_handshake->destroy(extended_handshake);
     if (success == 0) {
         fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+        return EXIT_FAILURE;
+    } else {
+        return EXIT_SUCCESS;
     }
     
-    return EXIT_SUCCESS;
-
 error:
     if(extended_handshake) { extended_handshake->destroy(extended_handshake); };
     fprintf(stderr, " %s✘%s\n", KRED, KNRM);
@@ -188,6 +191,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
     char meta_data[metadata_size * this->num_pieces];
     int metadata_pos = 0;
 
+    int success = 1;
     for (piece = 0; piece < this->num_pieces; piece++){
         Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
 
@@ -199,6 +203,9 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 
                 memcpy(&meta_data[metadata_pos], piece_packet->response->response, response_len);
                 metadata_pos += response_len;
+            } else {
+                success = 0;
+                break;
             }
 
             piece_packet->destroy(piece_packet);
@@ -208,55 +215,57 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         }
     }
 
-    meta_data[metadata_pos+1] = '\0';
+    if(success == 1){
+        meta_data[metadata_pos+1] = '\0';
 
-    bencode_t * bencoded = malloc(sizeof(bencode_t));
-    bencode_init(
-        bencoded,
-        &meta_data[0],
-        metadata_pos);
-    
-    Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
-    free(bencoded);
+        bencode_t * bencoded = malloc(sizeof(bencode_t));
+        bencode_init(
+            bencoded,
+            &meta_data[0],
+            metadata_pos);
+        
+        Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
+        free(bencoded);
 
 
-    /* nested complex data types are a pain to memory manage */
-    /* will be refactored so classes can handle proper destroy calls */
-    const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
-    Bucket * files_bucket = bencoded_hashmap->get_bucket(bencoded_hashmap, "files");
-    Linkednode * curr = files->head;
-    
-    while(curr){
-        Hashmap * file = (Hashmap *)curr->get(curr);
+        /* nested complex data types are a pain to memory manage */
+        /* will be refactored so classes can handle proper destroy calls */
+        const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
+        Bucket * files_bucket = bencoded_hashmap->get_bucket(bencoded_hashmap, "files");
+        Linkednode * curr = files->head;
+        
+        while(curr){
+            Hashmap * file = (Hashmap *)curr->get(curr);
 
-        const int * length = file->get(file, "length");
+            const int * length = file->get(file, "length");
 
-        const Linkedlist * path = file->get(file, "path");
-        Linkednode * path_curr = path->head;
-        const char * path_str;
-        while(path_curr){
-            path_str = path_curr->get(path_curr);
-            path_curr = path_curr->next;
+            const Linkedlist * path = file->get(file, "path");
+            Linkednode * path_curr = path->head;
+            const char * path_str;
+            while(path_curr){
+                path_str = path_curr->get(path_curr);
+                path_curr = path_curr->next;
+            }
+
+            log_info_important("%s (%i bytes)", path_str, *length);
+
+            Bucket * path_bucket = file->get_bucket(file, "path");
+            path = (const Linkedlist *) path_bucket->value;
+            path->destroy((Linkedlist *) path);
+            path_bucket->value = NULL;
+
+            file->destroy((Hashmap *) file);
+            curr->value = NULL;
+            curr = curr->next;
         }
 
-        log_info_important("%s (%i bytes)", path_str, *length);
+        files = (Linkedlist *) files_bucket->value;
+        files->destroy((Linkedlist *)files);
+        files_bucket->value = NULL;
 
-        Bucket * path_bucket = file->get_bucket(file, "path");
-        path = (const Linkedlist *) path_bucket->value;
-        path->destroy((Linkedlist *) path);
-        path_bucket->value = NULL;
-
-        file->destroy((Hashmap *) file);
-        curr->value = NULL;
-        curr = curr->next;
+        bencoded_hashmap->destroy(bencoded_hashmap);
+        bencoded_hashmap = NULL;
     }
-
-    files = (Linkedlist *) files_bucket->value;
-    files->destroy((Linkedlist *)files);
-    files_bucket->value = NULL;
-
-    bencoded_hashmap->destroy(bencoded_hashmap);
-    bencoded_hashmap = NULL;
 
     return EXIT_FAILURE;
 }

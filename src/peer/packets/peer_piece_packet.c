@@ -105,7 +105,7 @@ int Peer_Piece_Response_init(Peer_Piece_Response *this, char raw_response[2048],
     memcpy(&bencoded_response[0], &raw_response[6], length);
     bencoded_response[length] = '\0';
     
-    debug("%s", &bencoded_response[0]);
+    // debug("%s", &bencoded_response[0]);
 
     char * find = "ee\0";
     char *result = strstr(&bencoded_response[0], find);
@@ -222,13 +222,15 @@ void Peer_Piece_Packet_print (Peer_Piece_Packet *this)
 
 int Peer_Piece_Packet_send (Peer_Piece_Packet *this, Socket * socket)
 {
-    return socket->send(socket, &this->request->bytes, 31);//sizeof(this->request->bytes));
+    return socket->send(socket, &this->request->bytes, sizeof(this->request->bytes));
 }
 
 int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
 {
 	char out[17*2048] = {0};
     ssize_t packet_size = socket->receive(socket, out, 17*2048);
+    
+    // debug("packet_size :: %zu", packet_size);
 
     if(packet_size > 0){
     	/* prepare request */
