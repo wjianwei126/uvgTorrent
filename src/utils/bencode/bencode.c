@@ -45,6 +45,7 @@ Hashmap * bencode_to_hashmap(bencode_t * be){
                 // printf("DICT %s \n", dict_key);
                 Hashmap * child = bencode_to_hashmap(&benk);
                 hashmap->set(hashmap, dict_key, (void *) child, sizeof(Hashmap));
+                free(child);
             } else if(bencode_is_int(&benk)){
                 // printf("INT %s \n", dict_key);
                 long int int_val;

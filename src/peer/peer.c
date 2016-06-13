@@ -240,6 +240,8 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 
         debug("FILE FOUND :: %s SIZE :: %i", path_str, *length);
 
+        file->destroy(file);
+        curr->value = NULL;
         curr = curr->next;
     }
 
