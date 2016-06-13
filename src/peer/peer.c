@@ -235,6 +235,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         while(path_curr){
             path_str = path_curr->get(path_curr);
             debug("%s", path_str);
+            free(path_str);
             path_curr = path_curr->next;
         }
 
