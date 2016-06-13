@@ -92,7 +92,6 @@ error:
 int Peer_Extended_Handshake_Response_init(Peer_Extended_Handshake_Response *this, char raw_response[2048], ssize_t res_size)
 {
     char * bencoded_response = &raw_response[6];
-    debug("%s", bencoded_response);
     
     char * metadata_key = "metadata_sizei";
     
