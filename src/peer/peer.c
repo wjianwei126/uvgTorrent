@@ -165,7 +165,7 @@ int Peer_extended_handshake(Peer *this){
                 debug("piece_size :: %i", extended_handshake->response->piece_size);
             }
         } else {
-            
+
         }
     } else {
 
@@ -193,7 +193,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 
     int success = 1;
     for (piece = 0; piece < this->num_pieces; piece++){
-        Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
+        Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece, this->ut_metadata);
 
         if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
             int result = piece_packet->receive(piece_packet, this->socket);

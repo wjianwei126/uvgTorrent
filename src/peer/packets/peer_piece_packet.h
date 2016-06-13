@@ -7,7 +7,7 @@
 /* PEER HANDSHAKE REQUEST */
 typedef struct Peer_Piece_Request Peer_Piece_Request;
 struct Peer_Piece_Request { 
-	int (*init) (Peer_Piece_Request *this, int piece_num);
+	int (*init) (Peer_Piece_Request *this, int piece_num, int ut_metadata);
     void (*print) (Peer_Piece_Request *this);
     void (*destroy) (Peer_Piece_Request *this);
 
@@ -15,8 +15,8 @@ struct Peer_Piece_Request {
 	char bytes[31];
 };
 
-Peer_Piece_Request *Peer_Piece_Request_new (size_t size, int piece_num);
-int Peer_Piece_Request_init (Peer_Piece_Request *this, int piece_num);
+Peer_Piece_Request *Peer_Piece_Request_new (size_t size, int piece_num, int ut_metadata);
+int Peer_Piece_Request_init (Peer_Piece_Request *this, int piece_num, int ut_metadata);
 void Peer_Piece_Request_destroy (Peer_Piece_Request *this);
 void Peer_Piece_Request_print (Peer_Piece_Request *this);
 
@@ -39,7 +39,7 @@ void Peer_Piece_Response_print (Peer_Piece_Response *this);
 /* PEER HANDSHAKE WRAPPER */
 typedef struct Peer_Piece_Packet Peer_Piece_Packet;
 struct Peer_Piece_Packet {
-	int (*init) (Peer_Piece_Packet *this, int piece_num);
+	int (*init) (Peer_Piece_Packet *this, int piece_num, int ut_metadata);
     void (*print) (Peer_Piece_Packet *this);
     void (*destroy) (Peer_Piece_Packet *this);
 
@@ -50,8 +50,8 @@ struct Peer_Piece_Packet {
 	Peer_Piece_Response * response;
 };
 
-Peer_Piece_Packet * Peer_Piece_Packet_new (size_t size, int piece_num);
-int Peer_Piece_Packet_init (Peer_Piece_Packet *this, int piece_num);
+Peer_Piece_Packet * Peer_Piece_Packet_new (size_t size, int piece_num, int ut_metadata);
+int Peer_Piece_Packet_init (Peer_Piece_Packet *this, int piece_num, int ut_metadata);
 void Peer_Piece_Packet_destroy (Peer_Piece_Packet *this);
 void Peer_Piece_Packet_print (Peer_Piece_Packet *this);
 

@@ -13,7 +13,7 @@
 #include "data_structures/hashmap/hashmap.h"
 
 /* CONNECT REQUEST */
-Peer_Piece_Request * Peer_Piece_Request_new(size_t size, int piece_num)
+Peer_Piece_Request * Peer_Piece_Request_new(size_t size, int piece_num, int ut_metadata)
 {
 	Peer_Piece_Request *req = malloc(size);
     check_mem(req);
@@ -22,7 +22,7 @@ Peer_Piece_Request * Peer_Piece_Request_new(size_t size, int piece_num)
     req->destroy = Peer_Piece_Request_destroy;
     req->print= Peer_Piece_Request_print;
 
-    if(req->init(req, piece_num) == EXIT_FAILURE) {
+    if(req->init(req, piece_num, ut_metadata) == EXIT_FAILURE) {
         throw("Peer_Piece_Request init failed");
     } else {
         // all done, we made an object of any type
@@ -34,7 +34,7 @@ error:
     return NULL;
 }
 
-int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
+int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num, int ut_metadata)
 {
     char * bencoded_message_format = "d8:msg_typei0e5:piecei%iee\0";
     char bencoded_message[25];
@@ -42,7 +42,7 @@ int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
 
     uint32_t length = net_utils.htonl(strlen(bencoded_message) + 2);
     uint8_t bt_msg_id = 20;
-    uint8_t ut_metadata = 3;
+    uint8_t ut_metadata_uint = (uint8_t) ut_metadata;
 
     int pos = 0;
     memcpy(&this->bytes[pos], &length, sizeof(uint32_t));
@@ -51,7 +51,7 @@ int Peer_Piece_Request_init(Peer_Piece_Request *this, int piece_num)
     memcpy(&this->bytes[pos], &bt_msg_id, sizeof(uint8_t));
     pos += sizeof(uint8_t);
 
-    memcpy(&this->bytes[pos], &ut_metadata, sizeof(uint8_t));
+    memcpy(&this->bytes[pos], &ut_metadata_uint, sizeof(uint8_t));
     pos += sizeof(uint8_t);
 
     memcpy(&this->bytes[pos], bencoded_message, strlen(bencoded_message));
@@ -169,7 +169,7 @@ void Peer_Piece_Response_print(Peer_Piece_Response *this)
 }
 
 /* CONNECT WRAPPER */
-Peer_Piece_Packet * Peer_Piece_Packet_new (size_t size, int piece_num)
+Peer_Piece_Packet * Peer_Piece_Packet_new (size_t size, int piece_num, int ut_metadata)
 {
 	Peer_Piece_Packet *conn = malloc(size);
     check_mem(conn);
@@ -181,7 +181,7 @@ Peer_Piece_Packet * Peer_Piece_Packet_new (size_t size, int piece_num)
     conn->send = Peer_Piece_Packet_send;
     conn->receive = Peer_Piece_Packet_receive;
 
-    if(conn->init(conn, piece_num) == EXIT_FAILURE) {
+    if(conn->init(conn, piece_num, ut_metadata) == EXIT_FAILURE) {
         throw("Peer_Piece_Packet init failed");
     } else {
         return conn;
@@ -192,13 +192,13 @@ error:
     return NULL;
 }
 
-int Peer_Piece_Packet_init (Peer_Piece_Packet *this, int piece_num)
+int Peer_Piece_Packet_init (Peer_Piece_Packet *this, int piece_num, int ut_metadata)
 {
 	this->request = NULL;
 	this->response = NULL;
 
 	/* prepare request */
-	this->request = NEW(Peer_Piece_Request, piece_num);
+	this->request = NEW(Peer_Piece_Request, piece_num, ut_metadata);
 	check_mem(this->request);
 
 	return EXIT_SUCCESS;
