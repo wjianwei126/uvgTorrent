@@ -10,6 +10,7 @@
 #include "peer/packets/peer_piece_packet.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "data_structures/hashmap/hashmap.h"
+#include "data_structures/hashmap/bucket.h"
 #include "utils/bencode/bencode.h"
 
 Peer *Peer_new(size_t size, char *ip, uint16_t port)
@@ -221,6 +222,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
     free(bencoded);
 
     const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
+    Bucket * files_bucket = bencoded_hashmap->get_bucket(bencoded_hashmap, "files");
     Linkednode * curr = files->head;
 
     while(curr){
@@ -235,16 +237,24 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         while(path_curr){
             path_str = path_curr->get(path_curr);
             debug("%s", path_str);
-            free(path_str);
             path_curr = path_curr->next;
         }
 
         debug("FILE FOUND :: %s SIZE :: %i", path_str, *length);
 
+        Bucket * path_bucket = file->get_bucket(file, "path");
+        path = (Linkedlist *) path_bucket->value;
+        path->destroy(path);
+        path_bucket->value = NULL;
+
         file->destroy(file);
         curr->value = NULL;
         curr = curr->next;
     }
+
+    files = (Linkedlist *) files_bucket->value;
+    files->destroy(files);
+    files_bucket->value = NULL;
 
     bencoded_hashmap->destroy(bencoded_hashmap);
     bencoded_hashmap = NULL;

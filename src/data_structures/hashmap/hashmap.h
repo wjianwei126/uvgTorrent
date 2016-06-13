@@ -18,6 +18,7 @@ struct Hashmap {
     Bucket * buckets[_MAX_HASHTABLE_KEYS];
 	uint32_t (*get_hash)(char const *key, size_t len);
     const void * (*get)(Hashmap *this, const char *key);
+	Bucket * (* get_bucket)(Hashmap *this, const char *key);
     int (*set)(Hashmap *this, const char *key, const void *value, size_t value_size);
 };
 
@@ -28,6 +29,7 @@ void Hashmap_destroy(Hashmap *this);
 void Hashmap_print(Hashmap *this);
 
 const void * Hashmap_get(Hashmap *this, const char *key);
+Bucket * Hashmap_get_bucket(Hashmap *this, const char *key);
 int Hashmap_set(Hashmap *this, const char *key, const void *value, size_t value_size);
 uint32_t Hashmap_get_hash(const char *key, size_t len);
 

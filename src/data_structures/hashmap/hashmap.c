@@ -28,6 +28,7 @@ Hashmap *Hashmap_new(size_t size)
     map->print = Hashmap_print;
 
     map->get = Hashmap_get;
+    map->get_bucket = Hashmap_get_bucket;
     map->set = Hashmap_set;
     map->get_hash = Hashmap_get_hash;
 
@@ -130,6 +131,21 @@ const void * Hashmap_get(Hashmap *this, const char *key) {
 
     if(this->buckets[bucket_index] != NULL){
         return this->buckets[bucket_index]->get(this->buckets[bucket_index], key);
+    } else {
+        return NULL;
+    }
+
+error:
+    return NULL;
+}
+
+Bucket * Hashmap_get_bucket(Hashmap *this, const char *key) {
+    assert(key, "Hashmap :: provide key");
+    uint32_t hash = this->get_hash(key, strlen(key));
+    int bucket_index = hash % _MAX_HASHTABLE_KEYS;
+
+    if(this->buckets[bucket_index] != NULL){
+        return this->buckets[bucket_index];
     } else {
         return NULL;
     }
