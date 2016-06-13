@@ -185,10 +185,10 @@ error:
 int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 {
     int piece = 0;
-    char meta_data[metadata_size * 2];
+    char meta_data[metadata_size * this->num_pieces];
     int metadata_pos = 0;
 
-    for (piece = 0; piece < 1; piece++){
+    for (piece = 0; piece < this->num_pieces; piece++){
         Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
         int success = 0;
 
@@ -209,7 +209,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         }
     }
 
-    meta_data[metadata_pos] = '\0';
+    meta_data[metadata_pos+1] = '\0';
 
     bencode_t * bencoded = malloc(sizeof(bencode_t));
     bencode_init(
@@ -226,7 +226,7 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
     const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
     Bucket * files_bucket = bencoded_hashmap->get_bucket(bencoded_hashmap, "files");
     Linkednode * curr = files->head;
-
+    
     while(curr){
         Hashmap * file = (Hashmap *)curr->get(curr);
 
@@ -238,11 +238,10 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         char * path_str;
         while(path_curr){
             path_str = path_curr->get(path_curr);
-            debug("%s", path_str);
             path_curr = path_curr->next;
         }
 
-        debug("FILE FOUND :: %s SIZE :: %i", path_str, *length);
+        log_info_important("%s (%i bytes)", path_str, *length);
 
         Bucket * path_bucket = file->get_bucket(file, "path");
         path = (Linkedlist *) path_bucket->value;

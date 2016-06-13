@@ -19,6 +19,8 @@
 
 #define log_info(M, ...) fprintf(stderr, KBLU "[INFO]  %s:%d: " M KNRM "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
+#define log_info_important(M, ...) fprintf(stderr, KYEL "[INFO]  %s:%d: " M KNRM "\n", __FILE__, __LINE__, ##__VA_ARGS__)
+
 #define log_confirm(M, ...) fprintf(stderr, KBLU "[INFO]  %s:%d: " M KNRM, __FILE__, __LINE__, ##__VA_ARGS__)
 
 #define assert(A, M, ...) if(!(A)) { log_err(M, ##__VA_ARGS__); errno=0; goto error; }
