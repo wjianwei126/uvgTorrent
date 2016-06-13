@@ -218,9 +218,11 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         metadata_pos);
     
     Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
-
     free(bencoded);
 
+
+    /* nested complex data types are a pain to memory manage */
+    /* will be refactored so classes can handle proper destroy calls */
     const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
     Bucket * files_bucket = bencoded_hashmap->get_bucket(bencoded_hashmap, "files");
     Linkednode * curr = files->head;
