@@ -190,7 +190,6 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 
     for (piece = 0; piece < this->num_pieces; piece++){
         Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
-        int success = 0;
 
         if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
             int result = piece_packet->receive(piece_packet, this->socket);
@@ -230,12 +229,11 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
     while(curr){
         Hashmap * file = (Hashmap *)curr->get(curr);
 
-        int * length = file->get(file, "length");
+        const int * length = file->get(file, "length");
 
-        Linkedlist * path = file->get(file, "path");
-
+        const Linkedlist * path = file->get(file, "path");
         Linkednode * path_curr = path->head;
-        char * path_str;
+        const char * path_str;
         while(path_curr){
             path_str = path_curr->get(path_curr);
             path_curr = path_curr->next;
@@ -244,17 +242,17 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         log_info_important("%s (%i bytes)", path_str, *length);
 
         Bucket * path_bucket = file->get_bucket(file, "path");
-        path = (Linkedlist *) path_bucket->value;
-        path->destroy(path);
+        path = (const Linkedlist *) path_bucket->value;
+        path->destroy((Linkedlist *) path);
         path_bucket->value = NULL;
 
-        file->destroy(file);
+        file->destroy((Hashmap *) file);
         curr->value = NULL;
         curr = curr->next;
     }
 
     files = (Linkedlist *) files_bucket->value;
-    files->destroy(files);
+    files->destroy((Linkedlist *)files);
     files_bucket->value = NULL;
 
     bencoded_hashmap->destroy(bencoded_hashmap);

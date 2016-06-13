@@ -252,7 +252,7 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
             while(curr){
                 Peer * peer = (Peer *)curr->value;
 
-                int res = peer->handshake(peer, info_hash);
+                int res = peer->handshake(peer, (char *) info_hash);
                 if(res == EXIT_SUCCESS) {
                     res = peer->extended_handshake(peer);
                     char metadata[peer->metadata_size];
