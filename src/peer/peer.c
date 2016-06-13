@@ -184,10 +184,10 @@ error:
 int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 {
     int piece = 0;
-    char meta_data[metadata_size + 1];
+    char meta_data[metadata_size * 2];
     int metadata_pos = 0;
 
-    for (piece = 0; piece < this->num_pieces; piece++){
+    for (piece = 0; piece < 1; piece++){
         Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece);
         int success = 0;
 
@@ -195,9 +195,10 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
             int result = piece_packet->receive(piece_packet, this->socket);
             
             if(result == EXIT_SUCCESS){
-                debug("response len %i", piece_packet->response->response_len);
-                memcpy(&meta_data[metadata_pos], piece_packet->response->response, piece_packet->response->response_len);
-                metadata_pos += piece_packet->response->response_len;
+                int response_len = piece_packet->response->response_len;
+
+                memcpy(&meta_data[metadata_pos], piece_packet->response->response, response_len);
+                metadata_pos += response_len;
             }
 
             piece_packet->destroy(piece_packet);
@@ -216,6 +217,9 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         metadata_pos);
     
     Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
+
+    free(bencoded);
+
     const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
     Linkednode * curr = files->head;
 
@@ -238,6 +242,9 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 
         curr = curr->next;
     }
+
+    bencoded_hashmap->destroy(bencoded_hashmap);
+    bencoded_hashmap = NULL;
 
     return EXIT_FAILURE;
 }

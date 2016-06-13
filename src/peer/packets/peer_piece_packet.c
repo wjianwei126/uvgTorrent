@@ -105,9 +105,14 @@ int Peer_Piece_Response_init(Peer_Piece_Response *this, char raw_response[2048],
     memcpy(&bencoded_response[0], &raw_response[6], length);
     bencoded_response[length] = '\0';
 
+    char * find = "ee\0";
+    char *result = strstr(&bencoded_response[0], find);
+    int msg_pos = result - &bencoded_response[0];
+    msg_pos += strlen(find);
+
     this->response = malloc(length + 1);
-    memcpy(this->response, &bencoded_response[0], length);
-    
+    memcpy(this->response, &bencoded_response[msg_pos], length - msg_pos);
+
     this->response_len = length;
 
     /*
