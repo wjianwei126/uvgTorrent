@@ -230,7 +230,7 @@ int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
 	char out[17*2048] = {0};
     ssize_t packet_size = socket->receive(socket, out, 17*2048);
     
-    // debug("packet_size :: %zu", packet_size);
+    debug("packet_size :: %zu", packet_size);
 
     if(packet_size > 0){
     	/* prepare request */

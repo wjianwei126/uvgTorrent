@@ -207,7 +207,7 @@ int Tracker_Announce_Response_init(Tracker_Announce_Response *this, char raw_res
             break;
         }
 
-        //Peer * peer = NEW(Peer, ip, port);
+        // Peer * peer = NEW(Peer, ip, port);
         //peer->print(peer);
         Peer * peer = NEW(Peer, "127.0.0.1", 51413);
         peer_position += peer_size;
