@@ -7,7 +7,7 @@
 #include "peer/peer.h"
 #include "peer/packets/peer_handshake_packet.h"
 #include "peer/packets/peer_extended_handshake_packet.h"
-#include "peer/packets/peer_piece_packet.h"
+#include "peer/packets/peer_metadata_packet.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/hashmap/bucket.h"
@@ -187,13 +187,15 @@ error:
 
 int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 {
+    log_confirm("Attempting to get torrent metadata from peer :: %s:%u", this->ip, this->port);
+
     int piece = 0;
     char meta_data[metadata_size * this->num_pieces];
     int metadata_pos = 0;
 
     int success = 1;
     for (piece = 0; piece < this->num_pieces; piece++){
-        Peer_Piece_Packet * piece_packet =  NEW(Peer_Piece_Packet, piece, this->ut_metadata);
+        Peer_Metadata_Packet * piece_packet =  NEW(Peer_Metadata_Packet, piece, this->ut_metadata);
 
         if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
             int result = piece_packet->receive(piece_packet, this->socket);
@@ -227,12 +229,13 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
         Hashmap * bencoded_hashmap = bencode_to_hashmap(bencoded);
         free(bencoded);
 
-
         /* nested complex data types are a pain to memory manage */
         /* will be refactored so classes can handle proper destroy calls */
         const Linkedlist * files = bencoded_hashmap->get(bencoded_hashmap, "files");
         Bucket * files_bucket = bencoded_hashmap->get_bucket(bencoded_hashmap, "files");
         Linkednode * curr = files->head;
+
+        fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
         
         while(curr){
             Hashmap * file = (Hashmap *)curr->get(curr);
@@ -265,7 +268,10 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
 
         bencoded_hashmap->destroy(bencoded_hashmap);
         bencoded_hashmap = NULL;
-    }
 
-    return EXIT_FAILURE;
+        return EXIT_SUCCESS;
+    } else {
+        fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+        return EXIT_FAILURE;  
+    }
 }
