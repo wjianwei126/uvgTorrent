@@ -227,14 +227,30 @@ int Peer_Piece_Packet_send (Peer_Piece_Packet *this, Socket * socket)
 
 int Peer_Piece_Packet_receive (Peer_Piece_Packet *this, Socket * socket)
 {
+    // read packet length
 	char out[17*2048] = {0};
-    ssize_t packet_size = socket->receive(socket, out, 17*2048);
-    
-    debug("packet_size :: %zu", packet_size);
+    int pos = 0;
+    int bytes_received = 0;
 
-    if(packet_size > 0){
+    socket->receive(socket, &out[pos], sizeof(uint32_t));
+    uint32_t length;
+    memcpy(&length, &out[pos], sizeof(uint32_t));
+    length = net_utils.ntohl(length);
+    pos += sizeof(uint32_t);
+
+    debug("LENGTH");
+
+    while(bytes_received < length) {
+        ssize_t packet_size = socket->receive(socket, &out[pos], length - bytes_received);
+        bytes_received += packet_size;
+        pos += packet_size;
+
+        debug("bytes_received :: %zu", bytes_received);
+    }
+
+    if(bytes_received > 0){
     	/* prepare request */
-		this->response = NEW(Peer_Piece_Response, out, packet_size);
+		this->response = NEW(Peer_Piece_Response, out, length + sizeof(uint32_t));
 
 		check_mem(this->response);
 
