@@ -260,6 +260,10 @@ int Tracker_announce(Tracker *this, Torrent *torrent)
                         res = peer->get_metadata(peer, metadata, peer->metadata_size);
                     }
                 }
+
+                // get a piece
+                peer->get_piece(peer, 0);
+                
                 curr = curr->next;
             }
 

@@ -8,6 +8,7 @@
 #include "peer/packets/peer_handshake_packet.h"
 #include "peer/packets/peer_extended_handshake_packet.h"
 #include "peer/packets/peer_metadata_packet.h"
+#include "peer/packets/peer_request_piece_packet.h"
 #include "data_structures/linkedlist/linkedlist.h"
 #include "data_structures/hashmap/hashmap.h"
 #include "data_structures/hashmap/bucket.h"
@@ -25,6 +26,7 @@ Peer *Peer_new(size_t size, char *ip, uint16_t port)
     Peer->handshake = Peer_handshake;
     Peer->extended_handshake = Peer_extended_handshake;
     Peer->get_metadata = Peer_get_metadata;
+    Peer->get_piece = Peer_get_piece;
 
     if(Peer->init(Peer, ip, port) == EXIT_FAILURE) {
         throw("Peer init failed");
@@ -139,8 +141,9 @@ int Peer_extended_handshake(Peer *this){
     log_confirm("Attempting Extended Handshake :: %s:%u", this->ip, this->port);
 
     Peer_Extended_Handshake_Packet * extended_handshake = NULL;
-
     extended_handshake = NEW(Peer_Extended_Handshake_Packet);
+    check_mem(extended_handshake);
+
     int success = 0;
     
     if(extended_handshake->send(extended_handshake, this->socket) == EXIT_SUCCESS){
@@ -165,17 +168,16 @@ int Peer_extended_handshake(Peer *this){
                 debug("piece_size :: %i", extended_handshake->response->piece_size);
             }
         } else {
-
+            goto error;
         }
     } else {
-
+        goto error;
     }
 
-    extended_handshake->destroy(extended_handshake);
     if (success == 0) {
-        fprintf(stderr, " %s✘%s\n", KRED, KNRM);
-        return EXIT_FAILURE;
+        goto error;
     } else {
+        extended_handshake->destroy(extended_handshake);
         return EXIT_SUCCESS;
     }
     
@@ -273,5 +275,35 @@ int Peer_get_metadata(Peer *this, char * out, int metadata_size)
     } else {
         fprintf(stderr, " %s✘%s\n", KRED, KNRM);
         return EXIT_FAILURE;  
+    }
+}
+
+
+int Peer_get_piece(Peer *this, int piece)
+{
+    log_confirm("Requesting piece from peer :: %s:%u", this->ip, this->port);
+
+    Peer_Request_Piece_Packet * piece_packet =  NEW(Peer_Request_Piece_Packet, 0, 32, "test\0");
+    int success = 0;
+
+    if(piece_packet->send(piece_packet, this->socket) == EXIT_SUCCESS){
+        int result = piece_packet->receive(piece_packet, this->socket);
+        
+        if(result == EXIT_SUCCESS){
+            //int response_len = piece_packet->response->response_len;
+            success = 1;
+        } else {
+            success = 0;
+        }
+
+        piece_packet->destroy(piece_packet);
+    }
+
+    if(success == 1){
+        fprintf(stderr, " %s✔%s\n", KGRN, KNRM);
+        return EXIT_SUCCESS;
+    } else {
+        fprintf(stderr, " %s✘%s\n", KRED, KNRM);
+        return EXIT_FAILURE;    
     }
 }

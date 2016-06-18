@@ -15,6 +15,7 @@ struct Peer {
     int (*handshake)(Peer *this, char * info_hash);
     int (*extended_handshake)(Peer *this);
     int (*get_metadata)(Peer *this, char * out, int metadata_size);
+    int (*get_piece)(Peer *this, int piece);
 
     char * ip;
     uint16_t port;
@@ -40,5 +41,6 @@ void Peer_print(Peer *this);
 int Peer_handshake(Peer *this, char * info_hash);
 int Peer_extended_handshake(Peer *this);
 int Peer_get_metadata(Peer *this, char * out, int metadata_size);
+int Peer_get_piece(Peer *this, int piece);
 
 #endif
